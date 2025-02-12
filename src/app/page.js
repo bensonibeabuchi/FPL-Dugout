@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // Use Next.js navigation
+import { useRouter } from "next/navigation";
 import { useGetTeamQuery } from "@/app/redux/services/fplApi";
 import { useDispatch, useSelector } from "react-redux";
-import { setTeamData } from "@/app/redux/slices/teamSlice"; // Import Redux action
+import { setTeamData } from "@/app/redux/slices/teamSlice"; 
 import Navbar from "./components/common/Navbar";
 import Link from "next/link";
 import SelectLeague from "./components/common/SelectLeague";

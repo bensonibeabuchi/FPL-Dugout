@@ -8,9 +8,15 @@ export const fplApi = createApi({
       query: (teamId) => `team/${teamId}/`,
     }),
     getLeague: builder.query({
-      query: ({ leagueId, page },) => `league/${page}/${leagueId}/`
+      query: ({ leagueId, page }) => `league/classic/${page}/${leagueId}/`
+    }),
+    getFullTeamDetails: builder.query({
+      query: ({ teamId, gw }) => `team/${teamId}/event/${gw}/picks/`
+    }),
+    getGeneralInfo: builder.query({
+      query: () => `general-info/`
     }),
   }),
 });
 
-export const { useGetTeamQuery, useGetLeagueQuery } = fplApi; // Export hooks for components
+export const { useGetTeamQuery, useGetLeagueQuery, useGetFullTeamDetailsQuery, useGetGeneralInfoQuery } = fplApi; // Export hooks for components
