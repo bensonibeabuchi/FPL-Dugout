@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import "remixicon/fonts/remixicon.css";
 import { IoIosCloseCircle } from "react-icons/io";
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function SelectLeague({ isOpen, onClose}) {
   const userTeam = useSelector((state) => state.team.teamData);
   const [page, setPage] = useState(1)
-  console.log(userTeam?.leagues.classic)
+  // console.log(userTeam?.leagues.classic)
 
   return (
     <div className="fixed z-20 top-0 h-screen w-screen left-0 bg-black bg-opacity-50 flex items-center justify-center mx-auto backdrop-blur-sm">

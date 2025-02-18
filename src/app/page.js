@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useGetTeamQuery } from "@/app/redux/services/fplApi";
 import { useDispatch, useSelector } from "react-redux";
 import { setTeamData } from "@/app/redux/slices/teamSlice"; 
@@ -13,7 +12,6 @@ export default function Home() {
   const [teamId, setTeamId] = useState("");
   const [submittedTeamId, setSubmittedTeamId] = useState(null);
   const dispatch = useDispatch();
-  const router = useRouter();
   const [showLeague, setShowLeague] = useState(true)
 
   const userTeam = useSelector((state) => state.team.teamData);
@@ -52,13 +50,12 @@ export default function Home() {
     }
   };
   
-
   const handleOnclose = () => {
     setShowLeague(false)
   }
 
   return (
-    <>
+    <div className="bg-gray-800">
       <Navbar/>
       <div>
         <div className="relative bg-[url('../../public/images/background.png')] bg-cover bg-center text-center justify-center items-center flex w-full h-[962px]">
@@ -106,6 +103,6 @@ export default function Home() {
           <p className="text-3xl p-8">Dashboard Us</p>
         </Link>
       </div>
-    </>
+    </div>
   );
 }

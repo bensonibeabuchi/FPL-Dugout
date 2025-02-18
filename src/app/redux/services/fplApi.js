@@ -16,7 +16,17 @@ export const fplApi = createApi({
     getGeneralInfo: builder.query({
       query: () => `general-info/`
     }),
+    getPlayerPhoto: builder.query({
+      query: ({ opta_code }) => `/player/${opta_code}`,
+      transformResponse: (response) => response?.url ?? "", // ✅ Extract only the image URL
+    }),
+    getLiveGameweekData: builder.query({
+      query: ({ event_id }) => `/gameweek/${event_id}/live/`,
+    }),
+    
+    
+    
   }),
 });
 
-export const { useGetTeamQuery, useGetLeagueQuery, useGetFullTeamDetailsQuery, useGetGeneralInfoQuery } = fplApi; // Export hooks for components
+export const { useGetTeamQuery, useGetLeagueQuery, useGetFullTeamDetailsQuery, useGetGeneralInfoQuery, useGetPlayerPhotoQuery, useGetLiveGameweekDataQuery } = fplApi; // Export hooks for components

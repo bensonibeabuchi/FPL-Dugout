@@ -1,8 +1,10 @@
-"use client";
+// "use client";
+// import { Provider } from "react-redux";
+// import { store } from "./redux/store";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import { Provider } from "react-redux";
-import { store } from "./redux/store";
+import ClientProvider from "./components/common/ClientProvider";
+
 
 
 const poppins = Poppins({
@@ -10,7 +12,7 @@ const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"]
 });
 
-const metadata = {
+export const metadata = {
   title: "FPL Dugout",
   description: "The Ultimate Fantasy Experience",
 };
@@ -19,9 +21,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={poppins.className}>
-        <Provider store={store}>
+        {/* <Provider store={store}>
           {children}
-        </Provider>
+        </Provider> */}
+        <ClientProvider>
+          {children}
+        </ClientProvider>
       </body>
     </html>
   );

@@ -4,7 +4,6 @@ import Image from 'next/image'
 import logo from '../../../../public/images/logo.png'
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useDispatch, useSelector } from "react-redux";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowUp } from "react-icons/io";
 
@@ -44,7 +43,7 @@ export default function Navbar() {
             </Link>
             <div className="flex items-center md:gap-2">
                 <p>{userTeam?.name}</p>
-                <p className="text-black text-xs md:text-base">Active League :</p>
+                <p className="text-xs md:text-base">Active League :</p>
                 <div>
                     <button onClick={() => setIsOpen(!isOpen)} className="flex justify-between cursor-pointer md:w-48 text-xs md:text-base items-center bg-[#c9c9c9] md:p-3 p-2 md:rounded-md rounded gap-1">
                         <p>Select League</p>
