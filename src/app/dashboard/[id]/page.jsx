@@ -2,7 +2,7 @@
 import Navbar from '@/app/components/common/Navbar';
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery } from "@/app/redux/services/fplApi";
+import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery } from "@/app/redux/services/fplApi";
 import { useDispatch } from "react-redux";
 import { fplApi } from '@/app/redux/services/fplApi';
 import PlayerCard from '@/app/components/common/PlayerCard';
@@ -34,12 +34,15 @@ export default function Page() {
             ...leagueData.standings,
             results: [...leagueData.standings.results, ...leagueData2.standings.results, ...leagueData3.standings.results, ...leagueData4.standings.results] //concating results
         }
-    }
-    : leagueData || leagueData2 || leagueData3 || leagueData4  // If one of them is undefined, fallback to the other
+    } : leagueData || leagueData2 || leagueData3 || leagueData4  // If one of them is undefined, fallback to the other
 
     const { data: fullTeamDetailsData } = useGetFullTeamDetailsQuery({ teamId, gw }, { skip: !teamId || !gw });
     const { data: generalInfo } = useGetGeneralInfoQuery();
     const { data: liveGameweek } = useGetLiveGameweekDataQuery({ event_id }, { skip: !event_id });
+    // 
+
+    // const teamIds = fullLeagueData?.standings?.results?.map(team => team.entry) || [];
+    // const teamHistories = teamIds.map(id => useGetTeamHistoryQuery({ teamId: id }, { skip: !id }));
 
     useEffect(() => {
         const savedTeamData = localStorage.getItem("teamData");
@@ -82,11 +85,27 @@ export default function Page() {
 
     const elementTypes = [1, 2, 3, 4, 5];
 
-    const totalTeamPoints = fullTeamDetailsData?.picks.slice(0, 11).reduce((total, player) => {
-            const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-            const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
-            return total + eventPoints;
-        }, 0);
+    const totalTeamPoints = fullTeamDetailsData?.picks?.reduce((total, player) => {
+        const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+        const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+        // console.log("MATCHED PLAYER POINTS", matchedPlayerPoints)
+        return total + eventPoints;
+    }, 0) || 0;
+    
+    const eventRealPoints = totalTeamPoints - (fullTeamDetailsData?.entry_history?.event_transfers_cost ?? 0)
+
+
+    // Get the last recorded gameweek before the current one
+    // const previousTotalPoints =
+    //     teamHistory?.current?.length > 1 
+    //         ? teamHistory.current[teamHistory.current.length - 2]?.total_points 
+    //         : teamHistory?.current?.[0]?.total_points ?? 0;
+
+    // // Calculate realTotalPoints
+    // const realTotalPoints = previousTotalPoints + eventRealPoints;
+
+
+    
 
     if (isLoading) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Loading league data...</p></div>;;
     if (error) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Error loading league data</p></div>;
@@ -114,7 +133,7 @@ export default function Page() {
                                     <tbody>
                                         <tr>
                                             <td>GW Points: </td>
-                                            <td>{totalTeamPoints}</td>
+                                            <td>{eventRealPoints}</td>
                                         </tr>
                                         <tr>
                                             <td>Transfers: </td>
@@ -123,6 +142,7 @@ export default function Page() {
                                         </tr>
                                         <tr>
                                             <td>Total: </td>
+                                            {/* <td>{realTotalPoints}</td> */}
                                             <td>{fullTeamDetailsData?.entry_history.total_points}</td>
                                         </tr>
                                         <tr>
@@ -162,7 +182,7 @@ export default function Page() {
 
                                                 return (
                                                     <tr key={player.element} className="odd:bg-gray-300 even:bg-gray-200 text-black">
-                                                        <td className="p-2" >
+                                                        <td className="p-2">
                                                                 <PlayerCardLine
                                                                     key={player.element}
                                                                     player={matchedPlayer}
@@ -219,6 +239,7 @@ export default function Page() {
                                             {fullTeamDetailsData?.picks.slice(0, 11).filter((player) => player.element_type === type).map((player) => {
                                                     const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
                                                     const eventPoints = (matchedPlayer?.event_points ?? 0) * (player.multiplier ?? 1);
+                                                    
                                                     return (
                                                         <PlayerCard
                                                             key={player.element}
@@ -258,6 +279,7 @@ export default function Page() {
                     {/* LEAGUE DETAILS HERE */}
                     <LeagueTable 
                     fullLeagueData={fullLeagueData}
+                    // teamHistory={teamHistory}
                     fullTeam={fullTeam}
                     liveGameweek={liveGameweek}
                     generalInfo={generalInfo}

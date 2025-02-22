@@ -3,30 +3,18 @@ import React, { useState, useEffect } from 'react'
 import Navbar from '../components/common/Navbar'
 import Link from 'next/link'
 import { useSelector } from "react-redux";
+import Footer from '../components/common/Footer';
 
-export default function About() {
-    const [userTeam, setUserTeam] = useState(null);
-
-    useEffect(() => {
-        const savedTeamData = localStorage.getItem("teamData");
-        if (savedTeamData) {
-            // Parse the string back into an object if it's a JSON string
-            setUserTeam(JSON.parse(savedTeamData));
-        }
-    }, []);  
+export default function About() { 
 
   return (
     <div>
         <Navbar/>
         <p>About us page</p>
         <Link href="/">
-        <p>
-            Back to Home page
-        </p>
-        <p>
-                Team Name: {userTeam?.name}
-            </p>
+            <p>Back to Home page</p>
         </Link>
+        <Footer/>
     </div>
   )
 }

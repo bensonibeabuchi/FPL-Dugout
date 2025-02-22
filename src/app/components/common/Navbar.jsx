@@ -42,8 +42,8 @@ export default function Navbar() {
                 <Image src={logo} width='150' alt="Logo" />
             </Link>
             <div className="flex items-center md:gap-2">
-                <p>{userTeam?.name}</p>
-                <p className="text-xs md:text-base">Active League :</p>
+                <p className="text-xs md:text-base truncate">{userTeam?.name}</p>
+                <p className="text-xs md:text-base truncate">Active League :</p>
                 <div>
                     <button onClick={() => setIsOpen(!isOpen)} className="flex justify-between cursor-pointer md:w-48 text-xs md:text-base items-center bg-[#c9c9c9] md:p-3 p-2 md:rounded-md rounded gap-1">
                         <p>Select League</p>

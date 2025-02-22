@@ -6,7 +6,10 @@ import { setTeamData } from "@/app/redux/slices/teamSlice";
 import Navbar from "./components/common/Navbar";
 import Link from "next/link";
 import SelectLeague from "./components/common/SelectLeague";
-
+import Image from "next/image";
+import laptop from "../../public/images/laptop.png"
+import BlogCard from "./components/common/BlogCard";
+import Footer from "./components/common/Footer";
 
 export default function Home() {
   const [teamId, setTeamId] = useState("");
@@ -55,7 +58,7 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-gray-800">
+    <div className="">
       <Navbar/>
       <div>
         <div className="relative bg-[url('../../public/images/background.png')] bg-cover bg-center text-center justify-center items-center flex w-full h-[962px]">
@@ -89,19 +92,32 @@ export default function Home() {
 
         {error && <p className="text-center text-red-500 mt-4">Error fetching team</p>}
         
-        {userTeam && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold">Your Team Data:</h2>
-            <p>Team Name: {userTeam.name}</p>
-            
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 w-full gap-8 justify-center items-center text-center mx-auto p-32 px-16 sm:px-80 bg-white">
+          <div className="items-center justify-center mx-auto w-full">
+            <Image src={laptop} width={433} height={306} alt="Website preview"/>
           </div>
-        )}
-        <Link href="/about">
-          <p className="text-3xl p-8">About Us</p>
-        </Link>
-        <Link href="/dashboard">
-          <p className="text-3xl p-8">Dashboard Us</p>
-        </Link>
+          <div className="items-center justify-center my-auto">
+            <p className="sm:text-7xl text-xl font-semibold">LIVE DATA</p>
+            <p className="py-4 text-left truncate">We show your points, subs and rank in real-time!No waiting for FPL to update - see the true league impact of every goal, assist and clean sheet LIVE. We take care of the Autosubs, Captaincy switches and all the other stuff that can make it hard to know how well you are actually doing. Best of all, it is completely free.</p>
+          </div>
+        </div>
+
+        <div className="flex-col sm:grid-cols-1 md:grid-cols-2 w-full gap-8 justify-center items-center text-center mx-auto p-32 px-8 sm:px-80">
+          <div>
+            <p className="text-7xl font-semibold">FPL Tips and Content</p>
+          </div>
+          <div className="py-16 flex gap-24 justify-center">
+            <BlogCard/>
+            <BlogCard/>
+            <BlogCard/>
+          </div>
+
+        </div>
+        <Footer/>
+
+
+        
+
       </div>
     </div>
   );

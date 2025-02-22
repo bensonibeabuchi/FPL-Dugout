@@ -17,9 +17,9 @@ const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints }) => {
         <div suppressHydrationWarning className="sm:w-14 w-12 flex flex-col items-center">
             
             {isLoading ? (
-                <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14" />
+                <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14 " />
             ) : playerPhoto ? (
-                <Image src={playerPhoto || unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14" />
+                <Image src={playerPhoto || unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14 bg-white bg-opacity-20 rounded-t-lg backdrop-blur-sm" />
             ) : (
                 <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14" />
             )}

@@ -1,33 +1,39 @@
 import { useState, useEffect } from 'react';
 import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
 import CompareTwoTeams from './CompareTwoTeams';
+import TeamHistory from './TeamHistory';
+import PlayerCardHorizontal from './PlayerCardHorizontal';
+
 
 const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) => {
     const [sortedData, setSortedData] = useState([]);
     const [sortConfig, setSortConfig] = useState({ key: 'rank', order: 'asc' }); // Default sorting by rank (ascending)
+    const [teamRealPoints, setTeamRealPoints] = useState({});
     const [team1, setTeam1] = useState(null);
     const [team2, setTeam2] = useState(null);
-    const [comparisonData, setComparisonData] = useState(null);
     const [showComparison, setShowComaprison] = useState(false)
+    const [comparisonData, setComparisonData] = useState(null);
     const [comparisonSquads, setComparisonSquads] = useState(null)
+    const [isExpanded, setExpandedTeam] = useState(null);
 
   
     useEffect(() => {
       if (fullLeagueData?.standings?.results) {
-        setSortedData(fullLeagueData.standings.results);
+        setSortedData([...fullLeagueData.standings.results].sort((a, b) => b.total - a.total));
       }
     }, [fullLeagueData]);
+    
   
     const handleSort = (key) => {
       const newOrder = sortConfig.key === key && sortConfig.order === 'asc' ? 'desc' : 'asc';
-  
+
       setSortedData((prevData) =>
         [...prevData].sort((a, b) => {
           let valueA, valueB;
-  
-          if (key === 'rank') {
-            valueA = a.rank;
-            valueB = b.rank;
+    
+          if (key === 'realTotalPoints') {
+            valueA = teamRealPoints[a.entry] || 0; // Get stored realTotalPoints
+            valueB = teamRealPoints[b.entry] || 0;
           } else if (key === 'GW') {
             const teamDetailsA = fullTeam[a.entry] || {};
             const teamDetailsB = fullTeam[b.entry] || {};
@@ -47,13 +53,13 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
           }
   
           return newOrder === 'asc' ? valueA - valueB : valueB - valueA;
-        })
-      );
-  
-      setSortConfig({ key, order: newOrder });
-    };
+    })
+  );
 
-    const handleCompareTeams = () => {
+  setSortConfig({ key, order: newOrder });
+};
+
+  const handleCompareTeams = () => {
       if (team1 && team2) {
         const teamDetails1 = fullTeam[team1];
         const teamDetails2 = fullTeam[team2];
@@ -107,17 +113,21 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
       }
     };
 
-    const handleOnclose = () => {
+  const handleOnclose = () => {
       setShowComaprison(false)
     }
+
+  const handleToggleTeamPlayers = (teamId) => {
+    setExpandedTeam(prev => (prev === teamId ? null : teamId));
+  };
 
   return (
     <div className="w-full">
       
       {/* Compare Two Teams Section */}
       <div className="flex items-center gap-4 mb-2">
-        <h3 className="text-lg font-semibold">Compare Two Teams:</h3>
-          <div className="flex space-x-4 mt-2">
+        <h3 className="sm:text-lg text-sm font-normal sm:font-semibold">Compare:</h3>
+          <div className="sm:flex flex-row gap-2 mt-2">
             <select className="border p-2" onChange={(e) => setTeam1(Number(e.target.value))}>
               <option value="">Select Team 1</option>
               {sortedData.map(team => (
@@ -151,27 +161,17 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
         
       </div>
       {/* TABLE SECTION  */}
-      <table className="sm:min-w-[320px] w-full border border-gray-300 table-fixed">
+      <table className="sm:min-w-[320px] w-full border border-gray-300 table-auto">
         <thead>
-          <tr className="bg-[#202020] text-white text-xs sm:text-base">
-          <th
-              className="p-2 sm:py-10 text-left cursor-pointer max-w-28 flex items-center mt-3"
-              onClick={() => handleSort('rank')}
-            >
-              Rank {sortConfig.key === 'rank' ? (sortConfig.order === 'asc' ? <><RiArrowUpSFill color='green' size={20} /></> : <><RiArrowDownSFill color='red' size={20} /></>) : ''}
-              </th>
-            <th className="p-2 sm:py-10 text-left">Team</th>
-            <th className="p-2 sm:py-10 text-left">Total</th>
-            <th
-              className="p-2 sm:py-10 text-left cursor-pointer max-w-28 flex items-center mt-3"
-              onClick={() => handleSort('GW')}
-            >
-              GW {sortConfig.key === 'GW' ? (sortConfig.order === 'asc' ? <><RiArrowDownSFill color='red' size={20} /></> : <><RiArrowUpSFill color='green' size={20} /></>) : ''}
-              </th>
-            <th className="p-2 sm:py-10 text-left">Captain</th>
-            <th className="p-2 sm:py-10 text-left hidden sm:table-cell">Vice</th>
-            <th className="p-2 sm:py-10 text-left">Chip</th>
-            <th className="p-2 sm:py-10 text-left hidden sm:table-cell">Transfers</th>
+          <tr className="bg-[#202020] text-white text-[8px] sm:text-base">
+            <th> Rank </th>
+            <th className="p-2 sm:py-10 text-left min-w-14 max-w-32">Team</th>
+            <th className="p-2 sm:py-10 text-left cursor-pointer max-w-28 items-center mt-3" onClick={() => handleSort('realTotalPoints')}>Total {sortConfig.key === 'realTotalPoints' ? (sortConfig.order === 'asc' ? <RiArrowDownSFill color='red' size={20} /> : <RiArrowUpSFill color='green' size={20} />) : <RiArrowUpSFill color='green' size={20} />}</th>
+            <th className="p-2 sm:py-10 text-left cursor-pointer max-w-28 flex items-center mt-3" onClick={() => handleSort('GW')}>GW {sortConfig.key === 'GW' ? (sortConfig.order === 'asc' ? <><RiArrowDownSFill color='red' size={20} /></> : <><RiArrowUpSFill color='green' size={20} /></>) : <RiArrowUpSFill color='green' size={20} />}</th>
+            <th className="p-2 sm:py-10 text-left  w-12">Captain</th>
+            <th className="p-2 sm:py-10 text-left w-12">Vice</th>
+            <th className="p-2 sm:py-10 text-left ">Chip</th>
+            <th className="p-2 sm:py-10 text-left truncate">Transfers</th>
             <th className="p-2 sm:py-10 text-left max-w-14">Points from top</th>
           </tr>
         </thead>
@@ -193,26 +193,57 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
             const eventRealPoints = totalTeamPoints - (teamDetails?.entry_history?.event_transfers_cost ?? 0)
             
             return (
-              <tr key={team.entry} className="odd:bg-gray-100 even:bg-white text-[10px] sm:text-sm">
-                <td className='p-2 sm:py-10 text-left max-w-14'>{team.rank}</td>
-                <td className='p-2 sm:py-10 text-left max-w-20 font-semibold sm:font-bold'>{team.player_name}</td>
-                <td className='p-2 sm:py-10 text-left max-w-14'>{team.total}</td>
-                <td className='p-2 sm:py-10 text-left max-w-14'>{eventRealPoints}</td>
-                <td className='p-2 sm:py-10 text-left max-w-14'>{captainName}</td>
-                <td className='p-2 sm:py-10 text-left hidden sm:table-cell max-w-20'>{viceCaptainName}</td>
-                <td className='p-2 sm:py-10 text-left'>
-                  {teamDetails?.active_chip === "manager" ? "AM" :
-                    teamDetails?.active_chip === "3xc" ? "TC" :
-                    teamDetails?.active_chip === "wildcard" ? "WC" :
-                    teamDetails?.active_chip === "freehit" ? "FH" :
-                    teamDetails?.active_chip === "bboost" ? "BB" :
-                    teamDetails?.active_chip}
-                </td>
-                <td className='p-2 sm:py-10 text-left hidden sm:table-cell max-w-14'>
-                  {teamDetails?.entry_history?.event_transfers}({teamDetails?.entry_history?.event_transfers_cost ? `-${teamDetails.entry_history.event_transfers_cost}` : 0})
-                </td>
-                <td className='p-2 sm:py-10 text-left max-w-14'>{teamDetails?.entry_history?.total_points - highestPoints}</td>
-              </tr>
+<>
+  <tr key={team.entry} onClick={() => handleToggleTeamPlayers(team.entry)} className="odd:bg-gray-100 even:bg-white text-[8px] sm:text-lg cursor-pointer">
+    <td className='p-2 sm:py-10 text-left max-w-14 '>{team.rank}</td>
+    <td className='p-2 sm:py-10 text-left font-semibold sm:font-bold '>{team.player_name}</td>
+    <td className='p-2 sm:py-10 text-left max-w-14'>
+      <TeamHistory 
+        eventRealPoints={eventRealPoints}
+        teamId={team.entry}
+        onRealTotalPointsUpdate={(teamId, realTotalPoints) => {
+          setTeamRealPoints(prev => ({ ...prev, [teamId]: realTotalPoints }));
+        }}
+      /> 
+    </td>
+    <td className='p-2 sm:py-10 text-left max-w-14'>{eventRealPoints}</td>
+    <td className='p-2 sm:py-10 text-left max-w-14'>{captainName}</td>
+    <td className='p-2 sm:py-10 text-left  max-w-14 truncate'>{viceCaptainName}</td>
+    <td className='p-2 sm:py-10 text-left'>
+      {teamDetails?.active_chip === "manager" ? "AM" :
+        teamDetails?.active_chip === "3xc" ? "TC" :
+        teamDetails?.active_chip === "wildcard" ? "WC" :
+        teamDetails?.active_chip === "freehit" ? "FH" :
+        teamDetails?.active_chip === "bboost" ? "BB" :
+        teamDetails?.active_chip}
+    </td>
+    <td className='p-2 sm:py-10 text-left  max-w-14'>
+      {teamDetails?.entry_history?.event_transfers}({teamDetails?.entry_history?.event_transfers_cost ? `-${teamDetails.entry_history.event_transfers_cost}` : 0})
+    </td>
+    <td className='p-2 sm:py-10 text-left max-w-14'>{teamDetails?.entry_history?.total_points - highestPoints}</td>
+  </tr>
+
+  {isExpanded === team.entry && (
+    <tr>
+      <td colSpan="9" className="p-2 sm:p-8">
+        <div className="flex flex-wrap sm:gap-8 gap-3 text-xs sm:text-sm font-medium">
+          {teamDetails?.picks?.map(player =>  {
+
+          const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+          const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+          return (
+            <PlayerCardHorizontal key={player.element} eventPoints={eventPoints} player={generalInfo?.elements?.find(p => p.id === player.element)} isCaptain={player.is_captain} isViceCaptain={player.is_vice_captain} />
+          )
+          
+        })}
+        </div>
+      </td>
+    </tr>
+  )}
+</>
+
+              
+              
             );
           })}
         </tbody>
