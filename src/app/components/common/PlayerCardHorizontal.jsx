@@ -14,7 +14,7 @@ const PlayerCardHorizontal = ({ player, isCaptain, isViceCaptain, eventPoints })
     );
 
     return (
-        <div suppressHydrationWarning className="sm:w-20 w-8 flex flex-col items-center">
+        <div suppressHydrationWarning className="sm:w-20 w-8 flex flex-col items-center sm:m-4 m-1">
                     
                     {isLoading ? (
                         <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain sm:w-32 w-20" />
