@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
 import CompareTwoTeams from './CompareTwoTeams';
 import TeamHistory from './TeamHistory';
@@ -7,7 +7,7 @@ import PlayerCardHorizontal from './PlayerCardHorizontal';
 
 const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) => {
     const [sortedData, setSortedData] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: 'rank', order: 'asc' }); // Default sorting by rank (ascending)
+    const [sortConfig, setSortConfig] = useState({ key: 'realTotalPoints', order: 'asc' }); // Default sorting by rank (ascending)
     const [teamRealPoints, setTeamRealPoints] = useState({});
     const [team1, setTeam1] = useState(null);
     const [team2, setTeam2] = useState(null);
@@ -16,14 +16,33 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
     const [comparisonSquads, setComparisonSquads] = useState(null)
     const [isExpanded, setExpandedTeam] = useState(null);
 
+    const [highestRealTotalPoints, setHighestRealTotalPoints] = useState(0);
+
+
+    const handleRealTotalPointsUpdate = useCallback((teamId, realTotalPoints) => {
+      setTeamRealPoints((prev) => ({ ...prev, [teamId]: realTotalPoints }));
+  }, []);
+
   
     useEffect(() => {
       if (fullLeagueData?.standings?.results) {
-        setSortedData([...fullLeagueData.standings.results].sort((a, b) => b.total - a.total));
-      }
-    }, [fullLeagueData]);
+        // Map through teams and merge realTotalPoints from state
+        const updatedTeams = fullLeagueData.standings.results.map(team => ({
+          ...team,
+          realTotalPoints: teamRealPoints[team.entry] || 0, // Default to 0 if not found
+        }));
     
-  
+        // Sort teams based on realTotalPoints
+        setSortedData([...updatedTeams].sort((a, b) => b.realTotalPoints - a.realTotalPoints));
+      }
+    }, [fullLeagueData, teamRealPoints]); // Depend on both fullLeagueData and teamRealPoints
+
+    useEffect(() => {
+      if (sortedData.length > 0) {
+        setHighestRealTotalPoints(Math.max(...sortedData.map(team => team.realTotalPoints || 0)));
+      }
+    }, [sortedData]);
+    
     const handleSort = (key) => {
       const newOrder = sortConfig.key === key && sortConfig.order === 'asc' ? 'desc' : 'asc';
 
@@ -32,7 +51,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
           let valueA, valueB;
     
           if (key === 'realTotalPoints') {
-            valueA = teamRealPoints[a.entry] || 0; // Get stored realTotalPoints
+            valueA = teamRealPoints[a.entry] || 0; 
             valueB = teamRealPoints[b.entry] || 0;
           } else if (key === 'GW') {
             const teamDetailsA = fullTeam[a.entry] || {};
@@ -171,39 +190,39 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
             <th className="p-2 sm:py-10 text-left  w-12">Captain</th>
             <th className="p-2 sm:py-10 text-left w-12">Vice</th>
             <th className="p-2 sm:py-10 text-left ">Chip</th>
-            <th className="p-2 sm:py-10 text-left truncate">Transfers</th>
+            <th className="p-2 sm:py-10 text-left truncate">Hits</th>
             <th className="p-2 sm:py-10 text-left max-w-14">Points from top</th>
           </tr>
         </thead>
         <tbody>
-          {sortedData?.map((team) => {
+          {sortedData?.sort((a,b) =>b.realTotalPoints - a.realTotalPoints).map((team, index) => {
             const teamDetails = fullTeam[team.entry] || {};
             const captainElement = teamDetails?.picks?.find((pick) => pick.is_captain)?.element;
             const viceCaptainElement = teamDetails?.picks?.find((pick) => pick.is_vice_captain)?.element;
             const captainName = generalInfo?.elements?.find((player) => player.id === captainElement)?.web_name || "Unknown";
             const viceCaptainName = generalInfo?.elements?.find((player) => player.id === viceCaptainElement)?.web_name || "Unknown";
-            const highestPoints = Math.max(...fullLeagueData?.standings?.results?.map((t) => t.total) || [0]);
-
-            // Calculate total team points
             const totalTeamPoints = teamDetails?.picks?.reduce((total, player) => {
-                const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-                const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+              const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+              const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
                 return total + eventPoints;
-            }, 0) || 0;
+              }, 0) || 0;
             const eventRealPoints = totalTeamPoints - (teamDetails?.entry_history?.event_transfers_cost ?? 0)
-            
+
             return (
-                  <>
-                    <tr key={team.entry} onClick={() => handleToggleTeamPlayers(team.entry)} className="odd:bg-gray-100 even:bg-white text-[8px] sm:text-base cursor-pointer">
-                      <td className='p-2 sm:py-10 text-left max-w-14 '>{team.rank}</td>
-                      <td className='p-2 sm:py-10 text-left font-semibold sm:font-bold '>{team.player_name}</td>
-                      <td className='p-2 sm:py-10 text-left max-w-14'>
+                  < >
+                    <tr suppressHydrationWarning key={team.id} onClick={() => handleToggleTeamPlayers(team.entry)} className="odd:bg-gray-100 even:bg-white text-[8px] sm:text-base cursor-pointer">
+                      <td  className='p-2 sm:py-10 text-left max-w-14'>{index + 1}.</td>
+                      <td className='p-2 sm:py-10'> 
+                        <div className="flex-col">
+                          <div className="text-left font-semibold sm:font-bold">{team.entry_name}</div>
+                          <div className="text-sm">{team.player_name}</div> 
+                        </div>
+                      </td>
+                      <td  className='p-2 sm:py-10 text-left max-w-14'>
                         <TeamHistory 
                           eventRealPoints={eventRealPoints}
                           teamId={team.entry}
-                          onRealTotalPointsUpdate={(teamId, realTotalPoints) => {
-                            setTeamRealPoints(prev => ({ ...prev, [teamId]: realTotalPoints }));
-                          }}
+                          onRealTotalPointsUpdate={handleRealTotalPointsUpdate} 
                         /> 
                       </td>
                       <td className='p-2 sm:py-10 text-left max-w-14'>{eventRealPoints}</td>
@@ -220,18 +239,25 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
                       <td className='p-2 sm:py-10 text-left  max-w-14'>
                         {teamDetails?.entry_history?.event_transfers}({teamDetails?.entry_history?.event_transfers_cost ? `-${teamDetails.entry_history.event_transfers_cost}` : 0})
                       </td>
-                      <td className='p-2 sm:py-10 text-left max-w-14'>{teamDetails?.entry_history?.total_points - highestPoints}</td>
+                      <td className='p-2 sm:py-10 text-left max-w-14'>{teamRealPoints[team.entry] !== undefined ? teamRealPoints[team.entry] - highestRealTotalPoints : ""}</td>
                     </tr>
 
                     {isExpanded === team.entry && (
-                      <tr>
+                      
+                      <tr suppressHydrationWarning key={`expanded-${team.entry}`}>
                         <td colSpan="9" className="p-2 sm:p-8 m-2 bg-opacity-50 bg-gray-200">
                           <div className="flex flex-wrap sm:gap-6 gap-3 text-xs sm:text-sm font-medium">
                             {teamDetails?.picks?.map(player =>  {
                               const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-                              const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+                              const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier >= 1 ? player.multiplier : 1);
+                              
                               return (
-                                <PlayerCardHorizontal key={player.element} eventPoints={eventPoints} player={generalInfo?.elements?.find(p => p.id === player.element)} isCaptain={player.is_captain} isViceCaptain={player.is_vice_captain} />
+                                <PlayerCardHorizontal 
+                                  key={player.element} 
+                                  eventPoints={eventPoints} 
+                                  player={generalInfo?.elements?.find(p => p.id === player.element)} 
+                                  isCaptain={player.is_captain} 
+                                  isViceCaptain={player.is_vice_captain} />
                               )
                             
                           })}

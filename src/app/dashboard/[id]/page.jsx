@@ -9,6 +9,7 @@ import PlayerCard from '@/app/components/common/PlayerCard';
 import PlayerCardLine from '@/app/components/common/PlayerCardLine';
 import { PiToggleRightFill, PiToggleLeftFill } from "react-icons/pi";
 import LeagueTable from '@/app/components/common/LeagueTable';
+import TeamHistory from '@/app/components/common/TeamHistory';
 
 export default function Page() {
     const [userTeam, setUserTeam] = useState(null);
@@ -29,20 +30,14 @@ export default function Page() {
     const { data: leagueData4 } = useGetLeagueQuery({ leagueId, page:4 }, {skip: !leagueId});
     
     const fullLeagueData = leagueData && leagueData2 && leagueData3 && leagueData4 ? {
-        ...leagueData, // SPread operator to merge and update objects
-        standings: {
-            ...leagueData.standings,
-            results: [...leagueData.standings.results, ...leagueData2.standings.results, ...leagueData3.standings.results, ...leagueData4.standings.results] //concating results
+        ...leagueData, standings: {...leagueData.standings, results: [...leagueData.standings.results, ...leagueData2.standings.results, ...leagueData3.standings.results, ...leagueData4.standings.results] //concating results
         }
     } : leagueData || leagueData2 || leagueData3 || leagueData4  // If one of them is undefined, fallback to the other
 
     const { data: fullTeamDetailsData } = useGetFullTeamDetailsQuery({ teamId, gw }, { skip: !teamId || !gw });
     const { data: generalInfo } = useGetGeneralInfoQuery();
     const { data: liveGameweek } = useGetLiveGameweekDataQuery({ event_id }, { skip: !event_id });
-    // 
-
-    // const teamIds = fullLeagueData?.standings?.results?.map(team => team.entry) || [];
-    // const teamHistories = teamIds.map(id => useGetTeamHistoryQuery({ teamId: id }, { skip: !id }));
+    
 
     useEffect(() => {
         const savedTeamData = localStorage.getItem("teamData");
@@ -65,16 +60,15 @@ export default function Page() {
                             gw: gw,
                         })
                     ).unwrap();
-                    setFullTeam((prevState) => ({
-                        ...prevState,
-                        [team.entry]: response,
-                    }));
+                    setFullTeam((prevState) => ({...prevState, [team.entry]: response, }));
                 } catch (error){
                 }
             });
         }
     }, [leagueData, dispatch, gw]);
 
+
+ 
     const toggleView = () => {
         setPitchView((prev) => {
             const newView = !prev;
@@ -88,28 +82,13 @@ export default function Page() {
     const totalTeamPoints = fullTeamDetailsData?.picks?.reduce((total, player) => {
         const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
         const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
-        // console.log("MATCHED PLAYER POINTS", matchedPlayerPoints)
         return total + eventPoints;
     }, 0) || 0;
     
-    const eventRealPoints = totalTeamPoints - (fullTeamDetailsData?.entry_history?.event_transfers_cost ?? 0)
-
-
-    // Get the last recorded gameweek before the current one
-    // const previousTotalPoints =
-    //     teamHistory?.current?.length > 1 
-    //         ? teamHistory.current[teamHistory.current.length - 2]?.total_points 
-    //         : teamHistory?.current?.[0]?.total_points ?? 0;
-
-    // // Calculate realTotalPoints
-    // const realTotalPoints = previousTotalPoints + eventRealPoints;
-
-
-    
+    const eventRealPoints = totalTeamPoints - (fullTeamDetailsData?.entry_history?.event_transfers_cost ?? 0) 
 
     if (isLoading) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Loading league data...</p></div>;;
     if (error) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Error loading league data</p></div>;
-
 
     return (
         <>
@@ -142,8 +121,12 @@ export default function Page() {
                                         </tr>
                                         <tr>
                                             <td>Total: </td>
-                                            {/* <td>{realTotalPoints}</td> */}
-                                            <td>{fullTeamDetailsData?.entry_history.total_points}</td>
+                                            <td><TeamHistory 
+                                                eventRealPoints={eventRealPoints}
+                                                teamId={teamId} 
+                                                />
+                                            </td>
+                                            {/* <td>{fullTeamDetailsData?.entry_history.total_points}</td> */}
                                         </tr>
                                         <tr>
                                             <td>Chip: </td>
@@ -177,6 +160,7 @@ export default function Page() {
                                                 const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
                                                 // Find player's live gameweek points
                                                 const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
+                                                const playerColor = matchedPlayerPoints?.stats?.minutes
                                                 const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
                                                 const eventPoints = totalPoints * (player.multiplier ?? 1); 
 
@@ -186,7 +170,6 @@ export default function Page() {
                                                                 <PlayerCardLine
                                                                     key={player.element}
                                                                     player={matchedPlayer}
-                                                                    // eventPoints={eventPoints}
                                                                     isCaptain={player.is_captain}
                                                                     isViceCaptain={player.is_vice_captain}
                                                                     />
@@ -238,7 +221,11 @@ export default function Page() {
                                         <div className="flex flex-wrap gap-4">
                                             {fullTeamDetailsData?.picks.slice(0, 11).filter((player) => player.element_type === type).map((player) => {
                                                     const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
-                                                    const eventPoints = (matchedPlayer?.event_points ?? 0) * (player.multiplier ?? 1);
+                                                    // Find player's live gameweek points
+                                                    const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
+                                                    const playerColor = matchedPlayerPoints?.stats?.minutes
+                                                    const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
+                                                    const eventPoints = totalPoints * (player.multiplier ?? 1); 
                                                     
                                                     return (
                                                         <PlayerCard
@@ -258,12 +245,19 @@ export default function Page() {
                                 <div className="flex w-full gap-4 bg-black bg-opacity-50 p-6 mt-2 justify-center">
                                     {elementTypes.map((type) => 
                                         fullTeamDetailsData?.picks.slice(11, 16).filter((player) => player.element_type === type).map((player) => {
-                                                const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
+                                            const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
+                                            // Find player's live gameweek points
+                                            const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
+                                            const playerColor = matchedPlayerPoints?.stats?.minutes
+                                            const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
+                                            const eventPoints = totalPoints * (player.multiplier ?? 1); 
+                                                
                                                 
                                                 return (
                                                     <div key={player.element} className="">
                                                         <PlayerCard
                                                         key={player.element}
+                                                        playerColor={playerColor}
                                                         player={matchedPlayer}
                                                         eventPoints={matchedPlayer?.event_points ?? 0}
                                                         />

@@ -2,7 +2,7 @@ import { useGetPlayerPhotoQuery } from "@/app/redux/services/fplApi";
 import Image from "next/image";
 import unknown from "../../../../public/images/unknown.png"
 
-const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints }) => {
+const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints, playerColor }) => {
     if (!player || !player.opta_code) return null;
 
     const { opta_code, web_name } = player;
