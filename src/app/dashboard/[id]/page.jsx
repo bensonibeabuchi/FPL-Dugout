@@ -56,7 +56,7 @@ export default function Page() {
     }, []);
 
     useEffect(() => {
-        if (fullLeagueData?.standings?.results && gw) {
+        if (leagueData?.standings?.results && gw) {
             fullLeagueData?.standings?.results.forEach(async(team) => {
                 try {
                     const response = await dispatch(

@@ -35,6 +35,36 @@ const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, f
     const transferCost2 = fullTeam[team2]?.entry_history?.event_transfers_cost ?? "0"
 
 
+
+    // Extract team player lists
+    const team1Players = fullTeam[team1]?.picks || [];
+    const team2Players = fullTeam[team2]?.picks || [];
+
+    // Extract only element IDs for comparison
+    const team1Elements = team1Players.map(player => player.element);
+    const team2Elements = team2Players.map(player => player.element);
+
+    // Find common players (players in both teams based on element ID)
+    const commonPlayers = team1Players.filter(player => team2Elements.includes(player.element));
+    const commonPlayers2 = team2Players.filter(player => team1Elements.includes(player.element));
+
+    // Find different players (players only in each team)
+    const differentPlayers1 = team1Players.filter(player => !team2Elements.includes(player.element));
+    const differentPlayers2 = team2Players.filter(player => !team1Elements.includes(player.element));
+
+    // Combine them so that the different players appear first, followed by common players
+    const sortedPlayers1 = [...differentPlayers1, ...commonPlayers].map(player => ({
+        ...player,
+        playerInfo: generalInfo?.elements?.find(p => p.id === player.element) || {},
+    }));
+
+    const sortedPlayers2 = [...differentPlayers2, ...commonPlayers2].map(player => ({
+        ...player,
+        playerInfo: generalInfo?.elements?.find(p => p.id === player.element) || {},
+    }));
+
+
+
 return (
 <div
     className="fixed z-20 top-0 h-screen w-screen left-0 bg-black bg-opacity-50 flex items-center justify-center mx-auto backdrop-blur-sm">
@@ -64,9 +94,10 @@ return (
                     active_chip1}</p>
 
                 <div className="border p-4 rounded">
-                    {comparisonSquads.team1.map((player) => {
-                        return (
-                            <div key={player.id} className="flex items-center justify-between">
+                    {sortedPlayers1.map((player) => {
+                        const isCommon = commonPlayers.some(commonPlayer => commonPlayer.element === player.element);
+                            return (
+                                <div key={player.element} className={`flex items-center justify-between ${isCommon ? "bg-gray-100 text-gray-300" : ""}`}>
                                 <PlayerCardLine
                                 key={player.element} 
                                 player={player.playerInfo}
@@ -95,9 +126,11 @@ return (
                     active_chip2}</p>
 
                 <div className="border p-4 rounded">
-                    {comparisonSquads.team2.map((player) => {
+                    {sortedPlayers2.map((player) => {
+                        const isCommon = commonPlayers.some(commonPlayer => commonPlayer.element === player.element);
+                     
                         return (
-                            <div key={player.id} className="flex items-center justify-between">
+                            <div key={player.element} className={`flex items-center justify-between ${isCommon ? "bg-gray-100 text-gray-300" : ""}`}>
                                 <PlayerCardLine key={player.element} player={player.playerInfo} isCaptain={player.is_captain} isViceCaptain={player.is_vice_captain} eventPoints={player.stats?.total_points} />
                             <p>{(player.playerInfo?.event_points ?? 0) * (player.multiplier === 0 ? 1 : player.multiplier)}</p>
                         </div>

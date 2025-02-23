@@ -58,7 +58,7 @@ export default function Home() {
   }
 
   return (
-    <div className="">
+    <div>
       <Navbar/>
       <div>
         <div className="relative bg-[url('../../public/images/background.png')] bg-cover bg-center text-center justify-center items-center flex w-full h-[962px]">

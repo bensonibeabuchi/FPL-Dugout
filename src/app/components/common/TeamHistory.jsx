@@ -15,7 +15,7 @@ export default function TeamHistory({teamId, eventRealPoints, onRealTotalPointsU
 
     // Calculate realTotalPoints
     const realTotalPoints = previousTotalPoints + eventRealPoints;
-    console.log(realTotalPoints)
+    // console.log(realTotalPoints)
 
     useEffect(() => {
         if (teamId && onRealTotalPointsUpdate) {
