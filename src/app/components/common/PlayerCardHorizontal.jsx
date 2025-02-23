@@ -22,7 +22,7 @@ const PlayerCardHorizontal = ({ player, isCaptain, isViceCaptain, eventPoints })
                     ) : (
                         <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain sm:w-14 w-8" />
                     )}
-                    <p suppressHydrationWarning className="bg-[#32383c] sm:w-20 w-8 rounded-t-md sm:text-[10px] text-[8px] text-center font-semibold truncate text-white px-1 py-1">
+                    <p suppressHydrationWarning className="bg-[#32383c] sm:w-20 w-8 rounded-t-md sm:text-[14px] text-[8px] text-center font-semibold truncate text-white px-1 py-1">
                         {web_name} <span className="">{isCaptain ? "C" : ""} {isViceCaptain ? "VC" : ""}</span> 
                     </p>
                     <p suppressHydrationWarning className="bg-[#3a3f43] sm:w-20 w-8 rounded-b-md sm:text-[14px] text-[8px] text-center truncate text-white px-1 py-1">

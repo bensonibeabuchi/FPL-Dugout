@@ -3,86 +3,47 @@ import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
 import CompareTwoTeams from './CompareTwoTeams';
 import TeamHistory from './TeamHistory';
 import PlayerCardHorizontal from './PlayerCardHorizontal';
+import PlayerOwnership from './PlayerOwnership';
 
 
-const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) => {
-    const [sortedData, setSortedData] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: 'realTotalPoints', order: 'asc' }); // Default sorting by rank (ascending)
-    const [teamRealPoints, setTeamRealPoints] = useState({});
-    const [team1, setTeam1] = useState(null);
-    const [team2, setTeam2] = useState(null);
-    const [showComparison, setShowComaprison] = useState(false)
-    const [comparisonData, setComparisonData] = useState(null);
-    const [comparisonSquads, setComparisonSquads] = useState(null)
-    const [isExpanded, setExpandedTeam] = useState(null);
-
-    const [highestRealTotalPoints, setHighestRealTotalPoints] = useState(0);
-
-
-    const handleRealTotalPointsUpdate = useCallback((teamId, realTotalPoints) => {
+const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leagueName, gw, leagueId }) => {
+  const [sortedData, setSortedData] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'realTotalPoints', order: 'asc' }); // Default sorting by rank (ascending)
+  const [teamRealPoints, setTeamRealPoints] = useState({});
+  const [team1, setTeam1] = useState(null);
+  const [team2, setTeam2] = useState(null);
+  const [showComparison, setShowComaprison] = useState(false)
+  const [comparisonData, setComparisonData] = useState(null);
+  const [comparisonSquads, setComparisonSquads] = useState(null)
+  const [isExpanded, setExpandedTeam] = useState(null);
+  const [highestRealTotalPoints, setHighestRealTotalPoints] = useState(0);
+  const handleRealTotalPointsUpdate = useCallback((teamId, realTotalPoints) => {
       setTeamRealPoints((prev) => ({ ...prev, [teamId]: realTotalPoints }));
-  }, []);
+    }, []);
 
-  
-    useEffect(() => {
-      if (fullLeagueData?.standings?.results) {
-        // Map through teams and merge realTotalPoints from state
-        const updatedTeams = fullLeagueData.standings.results.map(team => ({
-          ...team,
-          realTotalPoints: teamRealPoints[team.entry] || 0, // Default to 0 if not found
-        }));
-    
-        // Sort teams based on realTotalPoints
-        setSortedData([...updatedTeams].sort((a, b) => b.realTotalPoints - a.realTotalPoints));
-      }
-    }, [fullLeagueData, teamRealPoints]); // Depend on both fullLeagueData and teamRealPoints
+  useEffect(() => {
+    if (fullLeagueData?.standings?.results) {
+      // Map through teams and merge realTotalPoints from state
+      const updatedTeams = fullLeagueData.standings.results.map(team => ({
+        ...team,
+        realTotalPoints: teamRealPoints[team.entry] || 0, // Default to 0 if not found
+      }));
+      // Sort teams based on realTotalPoints
+      setSortedData([...updatedTeams].sort((a, b) => b.realTotalPoints - a.realTotalPoints));
+    }
+  }, [fullLeagueData, teamRealPoints]); 
 
-    useEffect(() => {
-      if (sortedData.length > 0) {
-        setHighestRealTotalPoints(Math.max(...sortedData.map(team => team.realTotalPoints || 0)));
-      }
-    }, [sortedData]);
-    
-    const handleSort = (key) => {
-      const newOrder = sortConfig.key === key && sortConfig.order === 'asc' ? 'desc' : 'asc';
-
-      setSortedData((prevData) =>
-        [...prevData].sort((a, b) => {
-          let valueA, valueB;
-    
-          if (key === 'realTotalPoints') {
-            valueA = teamRealPoints[a.entry] || 0; 
-            valueB = teamRealPoints[b.entry] || 0;
-          } else if (key === 'GW') {
-            const teamDetailsA = fullTeam[a.entry] || {};
-            const teamDetailsB = fullTeam[b.entry] || {};
-  
-            const totalTeamPointsA = teamDetailsA?.picks?.reduce((total, player) => {
-              const matchedPlayerPoints = liveGameweek?.elements?.find((e) => e.id === player.element);
-              return total + (matchedPlayerPoints?.stats?.total_points ?? 0) * (player.multiplier ?? 1);
-            }, 0) || 0;
-  
-            const totalTeamPointsB = teamDetailsB?.picks?.reduce((total, player) => {
-              const matchedPlayerPoints = liveGameweek?.elements?.find((e) => e.id === player.element);
-              return total + (matchedPlayerPoints?.stats?.total_points ?? 0) * (player.multiplier ?? 1);
-            }, 0) || 0;
-  
-            valueA = totalTeamPointsA - (teamDetailsA?.entry_history?.event_transfers_cost ?? 0);
-            valueB = totalTeamPointsB - (teamDetailsB?.entry_history?.event_transfers_cost ?? 0);
-          }
-  
-          return newOrder === 'asc' ? valueA - valueB : valueB - valueA;
-    })
-  );
-
-  setSortConfig({ key, order: newOrder });
-};
+  useEffect(() => {
+    if (sortedData.length > 0) {
+      setHighestRealTotalPoints(Math.max(...sortedData.map(team => team.realTotalPoints || 0)));
+    }
+  }, [sortedData]);
 
   const handleCompareTeams = () => {
-      if (team1 && team2) {
-        const teamDetails1 = fullTeam[team1];
-        const teamDetails2 = fullTeam[team2];
-        setShowComaprison(true);
+    if (team1 && team2) {
+      const teamDetails1 = fullTeam[team1];
+      const teamDetails2 = fullTeam[team2];
+      setShowComaprison(true);
     
         setComparisonData([
           {
@@ -140,11 +101,63 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
     setExpandedTeam(prev => (prev === teamId ? null : teamId));
   };
 
+  const [players, setPlayers] = useState([]);
+  const [ownership, setOwnership] = useState({});
+  const [selectedPlayer, setSelectedPlayer] = useState("");
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api/players/${leagueId}/${gw}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPlayers(data.players);
+        setOwnership(data.ownership);
+      });
+  }, [leagueId, gw]);
+
+  const totalManagers = sortedData?.length || 1; // Avoid division by zero
+
+  const selectedPlayerOwners = sortedData?.filter((team) => {
+    const teamPlayerIds = fullTeam[team.entry]?.picks?.map((pick) => pick.element) || [];
+    const teamPlayerNames = teamPlayerIds.map((id) =>
+      generalInfo?.elements?.find((p) => p.id === id)?.web_name || "Unknown"
+    );
+  
+    return teamPlayerNames.some(name => name?.trim().toLowerCase() === selectedPlayer?.trim().toLowerCase());
+  }).length || 0;
+  
+  const ownershipPercentage = ((selectedPlayerOwners / totalManagers) * 100).toFixed(2); // Convert to percentage
+
+
+
   return (
     <div className="w-full">
       
       {/* Compare Two Teams Section */}
-      <div className="flex items-center gap-4 mb-2">
+      <div className="bg-gray-200 p-2 sm:p-4 m-2 sm:text-lg text-sm font-normal sm:font-semibold"><p>League Name: {leagueName} </p> </div>
+      <div className="bg-gray-200 flex p-2 sm:p-4 m-2 gap-4 items-center">
+        <h2 className="sm:text-lg text-sm font-normal sm:font-semibold">Managers who owns :</h2>
+        <select onChange={(e) => setSelectedPlayer(e.target.value)} className="p-2">
+          <option value="">Select a player</option>
+          {players.map((player) => (
+            <option key={player} value={player}>
+              {player}
+            </option>
+          ))}
+        </select>
+        <h3>{selectedPlayerOwners}/{totalManagers} = {ownershipPercentage}%</h3>
+        {/* {selectedPlayer && (
+          <div>
+            <h3>Managers with {selectedPlayer}:</h3>
+            <ul>
+              {ownership[selectedPlayer]?.map((manager) => (
+                <li key={manager}>{manager}</li>
+              )) || <p>No managers own this player.</p>}
+            </ul>
+          </div>
+        )} */}
+      </div>
+
+      <div className="flex bg-gray-200 p-2 sm:p-4 m-2 items-center gap-4 mb-2">
         <h3 className="sm:text-lg text-sm font-normal sm:font-semibold">Compare:</h3>
           <div className="sm:flex flex-row gap-2 mt-2">
             <select className="border p-2" onChange={(e) => setTeam1(Number(e.target.value))}>
@@ -179,6 +192,14 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
         /> }
         
       </div>
+      {/* <div>
+        <PlayerOwnership
+        leagueId={leagueId}
+        gameweek={gw}
+        />
+      </div> */}
+
+
       {/* TABLE SECTION  */}
       <table className="sm:min-w-[320px] w-full border border-gray-300 table-auto">
         <thead>
@@ -207,10 +228,20 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
                 return total + eventPoints;
               }, 0) || 0;
             const eventRealPoints = totalTeamPoints - (teamDetails?.entry_history?.event_transfers_cost ?? 0)
+            
+            
+            const teamPlayerIds = teamDetails?.picks?.map((pick) => pick.element) || [];
+            const teamPlayerNames = teamPlayerIds.map((id) => 
+              generalInfo?.elements?.find((p) => p.id === id)?.web_name || "Unknown"
+            );
+            const ownsSelectedPlayer = selectedPlayer && teamDetails?.picks?.some((pick) => {
+              const playerName = generalInfo?.elements?.find((p) => p.id === pick.element)?.web_name;
+              return playerName === selectedPlayer;
+            });
 
             return (
                   < >
-                    <tr suppressHydrationWarning key={team.id} onClick={() => handleToggleTeamPlayers(team.entry)} className="odd:bg-gray-100 even:bg-white text-[8px] sm:text-base cursor-pointer">
+                    <tr key={team.id} onClick={() => handleToggleTeamPlayers(team.entry)} className={` text-xs sm:text-base cursor-pointer ${ownsSelectedPlayer ? "bg-green-200" : "odd:bg-gray-100 even:bg-white"}`}>
                       <td  className='p-2 sm:py-10 text-left max-w-14'>{index + 1}.</td>
                       <td className='p-2 sm:py-10'> 
                         <div className="flex-col">
@@ -259,7 +290,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo }) =>
                                   isCaptain={player.is_captain} 
                                   isViceCaptain={player.is_vice_captain} />
                               )
-                            
                           })}
                           </div>
                         </td>

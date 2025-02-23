@@ -2,7 +2,7 @@
 import Navbar from '@/app/components/common/Navbar';
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery } from "@/app/redux/services/fplApi";
+import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery, useGeth2hLeagueQuery } from "@/app/redux/services/fplApi";
 import { useDispatch } from "react-redux";
 import { fplApi } from '@/app/redux/services/fplApi';
 import PlayerCard from '@/app/components/common/PlayerCard';
@@ -15,7 +15,6 @@ export default function Page() {
     const [userTeam, setUserTeam] = useState(null);
     const pathname = usePathname();
     const leagueId = pathname.split('/').pop();
-    const [page, setPage] = useState(1);
     const [teamId, setTeamId] = useState("");
     const [gw, setGw] = useState("");
     const [event_id, setEventId] =useState("")
@@ -24,16 +23,7 @@ export default function Page() {
     
     
     const dispatch = useDispatch();
-    const { data: leagueData, error, isLoading } = useGetLeagueQuery({ leagueId, page }, {skip: !leagueId});
-    const { data: leagueData2 } = useGetLeagueQuery({ leagueId, page:2 }, {skip: !leagueId});
-    const { data: leagueData3 } = useGetLeagueQuery({ leagueId, page:3 }, {skip: !leagueId});
-    const { data: leagueData4 } = useGetLeagueQuery({ leagueId, page:4 }, {skip: !leagueId});
-    const leagueName = leagueData?.league?.name
-    const fullLeagueData = leagueData && leagueData2 && leagueData3 && leagueData4 ? {
-        ...leagueData, standings: {...leagueData.standings, results: [...leagueData.standings.results, ...leagueData2.standings.results, ...leagueData3.standings.results, ...leagueData4.standings.results] //concating results
-        }
-    } : leagueData || leagueData2 || leagueData3 || leagueData4  // If one of them is undefined, fallback to the other
-
+    const { data: leagueData, error, isLoading } = useGeth2hLeagueQuery({ leagueId }, {skip: !leagueId});
     const { data: fullTeamDetailsData } = useGetFullTeamDetailsQuery({ teamId, gw }, { skip: !teamId || !gw });
     const { data: generalInfo } = useGetGeneralInfoQuery();
     const { data: liveGameweek } = useGetLiveGameweekDataQuery({ event_id }, { skip: !event_id });
@@ -51,11 +41,11 @@ export default function Page() {
     }, []);
 
     useEffect(() => {
-        if (leagueData?.standings?.results && gw) {
-            fullLeagueData?.standings?.results.forEach(async(team) => {
+        if (leagueData?.results && gw) {
+            leagueData?.results.forEach(async(team) => {
                 try {
                     const response = await dispatch(
-                        fplApi.endpoints.getFullTeamDetails.initiate({
+                        fplApi.endpoints.geth2hLeague.initiate({
                             teamId: team.entry,
                             gw: gw,
                         })
@@ -272,11 +262,7 @@ export default function Page() {
                     
                     {/* LEAGUE DETAILS HERE */}
                     <LeagueTable 
-                    fullLeagueData={fullLeagueData}
-                    gw={gw}
-                    leagueId={leagueId}
-                    // teamHistory={teamHistory}
-                    leagueName={leagueName}
+                    fullLeagueData={leagueData}
                     fullTeam={fullTeam}
                     liveGameweek={liveGameweek}
                     generalInfo={generalInfo}

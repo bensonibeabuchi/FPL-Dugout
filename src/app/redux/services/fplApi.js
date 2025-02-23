@@ -25,11 +25,14 @@ export const fplApi = createApi({
     }),
     getTeamHistory: builder.query({
       query: ({teamId}) => `team/${teamId}/history/`
-    })
+    }),
+    geth2hLeague: builder.query({
+      query: ({ leagueId }) => `league/h2h/${leagueId}/`
+    }),
     
     
     
   }),
 });
 
-export const { useGetTeamQuery, useGetLeagueQuery, useGetFullTeamDetailsQuery, useGetGeneralInfoQuery, useGetPlayerPhotoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery } = fplApi; // Export hooks for components
+export const { useGetTeamQuery, useGeth2hLeagueQuery, useGetLeagueQuery, useGetFullTeamDetailsQuery, useGetGeneralInfoQuery, useGetPlayerPhotoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery } = fplApi; // Export hooks for components

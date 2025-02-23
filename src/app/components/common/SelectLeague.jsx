@@ -47,13 +47,14 @@ export default function SelectLeague({ isOpen, onClose}) {
           <div>
           <ul className="py-2">
             <li className='px-4 py-1 font-semibold text-[#38003c]'>Head-to-Head Leagues</li>
-              {userTeam?.leagues.h2h.map((league) => (
+            <p className="px-4 py-1 hover:bg-gray-100 hover:scale-[1.02] cursor-pointer">Unavailable right now. Thank you for your patience</p>
+              {/* {userTeam?.leagues.h2h.map((league) => (
                 <div key={league.id}>
-                  <Link href={`/dashboard/${league.id}`}>
+                  <Link href={`/h2h/${league.id}`}>
                     <li className="px-4 py-1 hover:bg-gray-100 hover:scale-[1.02] cursor-pointer">{league.name}</li>
                   </Link>
                 </div>
-              ))}
+              ))} */}
           </ul>
           </div>
         </div>
