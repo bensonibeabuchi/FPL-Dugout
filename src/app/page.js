@@ -23,19 +23,19 @@ export default function Home() {
     skip: !submittedTeamId, // Don't fetch until submit
   });
 
-  // Load team ID & data from localStorage on mount
+  
   useEffect(() => {
     const savedTeamId = localStorage.getItem("teamId");
     const savedTeamData = localStorage.getItem("teamData");
   
-    if (savedTeamData && !userTeam) {  // Only dispatch if there's no existing data
+    if (savedTeamData && !userTeam) {  
       setSubmittedTeamId(savedTeamId);
       const teamData = JSON.parse(savedTeamData);
       dispatch(setTeamData(teamData));
     }
-  }, [dispatch, userTeam]); // Add userTeam as dependency to prevent overwriting existing data
+  }, [dispatch, userTeam]); 
 
-  // Save data to Redux & localStorage when API returns it
+
   useEffect(() => {
     if (data) {
       dispatch(setTeamData(data));
