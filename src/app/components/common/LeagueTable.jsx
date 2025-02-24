@@ -106,7 +106,8 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   };
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/players/${leagueId}/${gw}`)
+    // fetch(`hhttp://127.0.0.1:8000/api/players/${leagueId}/${gw}`)
+    fetch(`https://fpl-dugout-backend-deploment.up.railway.app/api/players/${leagueId}/${gw}`)
       .then((res) => res.json())
       .then((data) => {
         setPlayers(data.players);
