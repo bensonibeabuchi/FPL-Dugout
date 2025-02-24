@@ -1,15 +1,7 @@
-import React from 'react';
-import Navbar from '../components/common/Navbar';
+import React from 'react'
 
-export default function Page() {
- 
-
-    return (
-        <div>
-            <Navbar />
-            <div>
-                <h1>DASHBOARD</h1>
-            </div>
-        </div>
-    );
+export default function Dashboard() {
+  return (
+    <div>Dashboard</div>
+  )
 }

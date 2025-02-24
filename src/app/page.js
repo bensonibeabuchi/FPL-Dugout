@@ -4,7 +4,6 @@ import { useGetTeamQuery } from "@/app/redux/services/fplApi";
 import { useDispatch, useSelector } from "react-redux";
 import { setTeamData } from "@/app/redux/slices/teamSlice"; 
 import Navbar from "./components/common/Navbar";
-import Link from "next/link";
 import SelectLeague from "./components/common/SelectLeague";
 import Image from "next/image";
 import laptop from "../../public/images/laptop.png"
@@ -25,31 +24,40 @@ export default function Home() {
 
   
   useEffect(() => {
-    const savedTeamId = localStorage.getItem("teamId");
-    const savedTeamData = localStorage.getItem("teamData");
-  
-    if (savedTeamData && !userTeam) {  
-      setSubmittedTeamId(savedTeamId);
-      const teamData = JSON.parse(savedTeamData);
-      dispatch(setTeamData(teamData));
+    if (typeof window !== "undefined"){
+
+      const savedTeamId = localStorage.getItem("teamId");
+      const savedTeamData = localStorage.getItem("teamData");
+      
+      if (savedTeamData && !userTeam) {  
+        setSubmittedTeamId(savedTeamId);
+        const teamData = JSON.parse(savedTeamData);
+        dispatch(setTeamData(teamData));
+      }
     }
   }, [dispatch, userTeam]); 
 
 
   useEffect(() => {
-    if (data) {
-      dispatch(setTeamData(data));
-      localStorage.setItem("teamData", JSON.stringify(data));
+    if (typeof window !== "undefined"){
+      
+      if (data) {
+        dispatch(setTeamData(data));
+        localStorage.setItem("teamData", JSON.stringify(data));
+      }
     }
   }, [data, dispatch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (teamId.trim()) {
-      localStorage.setItem("teamId", teamId);  // Store teamId in localStorage
-      setSubmittedTeamId(teamId);  // Trigger API call
-      setShowLeague(true);  // Show league selection
-      localStorage.setItem("teamData", JSON.stringify(data));
+    if (typeof window !== "undefined"){
+
+      if (teamId.trim()) {
+        localStorage.setItem("teamId", teamId);  // Store teamId in localStorage
+        setSubmittedTeamId(teamId);  // Trigger API call
+        setShowLeague(true);  // Show league selection
+        localStorage.setItem("teamData", JSON.stringify(data));
+      }
     }
   };
   

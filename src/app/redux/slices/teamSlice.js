@@ -1,19 +1,28 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  teamId: "",
+  teamData: null,
+  page: 1,
+};
+
+// Ensure `localStorage` is accessed only on the client side
+if (typeof window !== "undefined") {
+  initialState.teamId = localStorage.getItem("teamId") || "";
+}
+
 const teamSlice = createSlice({
   name: "team",
-  initialState: {
-    teamId: localStorage.getItem("teamId") || "",
-    teamData: null, // Store fetched team data
-    page: 1
-  },
+  initialState,
   reducers: {
     setTeamData: (state, action) => {
       state.teamData = action.payload;
     },
     setTeamId: (state, action) => {
       state.teamId = action.payload;
-      localStorage.setItem("teamId", action.payload);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("teamId", action.payload);
+      }
     },
   },
 });

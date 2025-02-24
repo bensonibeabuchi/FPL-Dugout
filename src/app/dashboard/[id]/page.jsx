@@ -40,13 +40,16 @@ export default function Page() {
     
 
     useEffect(() => {
-        const savedTeamData = localStorage.getItem("teamData");
-        if (savedTeamData) {
-            const parsedData = JSON.parse(savedTeamData);
-            setUserTeam(parsedData);
-            setTeamId(parsedData.id)
-            setGw(parsedData?.current_event);
-            setEventId(parsedData?.current_event);
+        if (typeof window !== "undefined"){
+
+            const savedTeamData = localStorage.getItem("teamData");
+            if (savedTeamData) {
+                const parsedData = JSON.parse(savedTeamData);
+                setUserTeam(parsedData);
+                setTeamId(parsedData.id)
+                setGw(parsedData?.current_event);
+                setEventId(parsedData?.current_event);
+            }
         }
     }, []);
 
@@ -71,9 +74,12 @@ export default function Page() {
  
     const toggleView = () => {
         setPitchView((prev) => {
-            const newView = !prev;
-            localStorage.setItem("pitchView", JSON.stringify(newView));
-            return newView;
+            if (typeof window !== "undefined"){
+
+                const newView = !prev;
+                localStorage.setItem("pitchView", JSON.stringify(newView));
+                return newView;
+            }
         });
     };
 
