@@ -8,7 +8,7 @@ import PlayerOwnership from './PlayerOwnership';
 
 const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leagueName, gw, leagueId }) => {
   const [sortedData, setSortedData] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: 'realTotalPoints', order: 'asc' }); // Default sorting by rank (ascending)
+  const [sortConfig, setSortConfig] = useState({ key: null, order: 'asc' }); // Default sorting by rank (ascending)
   const [teamRealPoints, setTeamRealPoints] = useState({});
   const [team1, setTeam1] = useState(null);
   const [team2, setTeam2] = useState(null);
@@ -17,6 +17,10 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   const [comparisonSquads, setComparisonSquads] = useState(null)
   const [isExpanded, setExpandedTeam] = useState(null);
   const [highestRealTotalPoints, setHighestRealTotalPoints] = useState(0);
+  const [players, setPlayers] = useState([]);
+  // const [ownership, setOwnership] = useState({});
+  const [selectedPlayer, setSelectedPlayer] = useState("");
+
   const handleRealTotalPointsUpdate = useCallback((teamId, realTotalPoints) => {
       setTeamRealPoints((prev) => ({ ...prev, [teamId]: realTotalPoints }));
     }, []);
@@ -101,16 +105,12 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
     setExpandedTeam(prev => (prev === teamId ? null : teamId));
   };
 
-  const [players, setPlayers] = useState([]);
-  const [ownership, setOwnership] = useState({});
-  const [selectedPlayer, setSelectedPlayer] = useState("");
-
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/players/${leagueId}/${gw}`)
       .then((res) => res.json())
       .then((data) => {
         setPlayers(data.players);
-        setOwnership(data.ownership);
+        // setOwnership(data.ownership);
       });
   }, [leagueId, gw]);
 
@@ -121,14 +121,20 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
     const teamPlayerNames = teamPlayerIds.map((id) =>
       generalInfo?.elements?.find((p) => p.id === id)?.web_name || "Unknown"
     );
-  
     return teamPlayerNames.some(name => name?.trim().toLowerCase() === selectedPlayer?.trim().toLowerCase());
   }).length || 0;
   
   const ownershipPercentage = ((selectedPlayerOwners / totalManagers) * 100).toFixed(2); // Convert to percentage
 
 
-
+  const handleSort = () => {
+    // Toggle the sorting order between 'asc' and 'desc'
+    setSortConfig((prevConfig) => {
+      const newOrder = prevConfig.order === 'asc' ? 'desc' : 'asc';
+      return { key: 'GW', order: newOrder };
+    });
+  };
+  
   return (
     <div className="w-full">
       
@@ -145,16 +151,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
           ))}
         </select>
         <h3>{selectedPlayerOwners}/{totalManagers} = {ownershipPercentage}%</h3>
-        {/* {selectedPlayer && (
-          <div>
-            <h3>Managers with {selectedPlayer}:</h3>
-            <ul>
-              {ownership[selectedPlayer]?.map((manager) => (
-                <li key={manager}>{manager}</li>
-              )) || <p>No managers own this player.</p>}
-            </ul>
-          </div>
-        )} */}
       </div>
 
       <div className="flex bg-gray-200 p-2 sm:p-4 m-2 items-center gap-4 mb-2">
@@ -192,13 +188,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
         /> }
         
       </div>
-      {/* <div>
-        <PlayerOwnership
-        leagueId={leagueId}
-        gameweek={gw}
-        />
-      </div> */}
-
 
       {/* TABLE SECTION  */}
       <table className="sm:min-w-[320px] w-full border border-gray-300 table-auto">
@@ -206,8 +195,12 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
           <tr className="bg-[#202020] text-white text-[8px] sm:text-base">
             <th> Rank </th>
             <th className="p-2 sm:py-10 text-left min-w-14 max-w-32">Team</th>
-            <th className="p-2 sm:py-10 text-left cursor-pointer max-w-28 items-center mt-3" onClick={() => handleSort('realTotalPoints')}>Total {sortConfig.key === 'realTotalPoints' ? (sortConfig.order === 'asc' ? <RiArrowDownSFill color='red' size={20} /> : <RiArrowUpSFill color='green' size={20} />) : <RiArrowUpSFill color='green' size={20} />}</th>
-            <th className="p-2 sm:py-10 text-left cursor-pointer max-w-28 flex items-center mt-3" onClick={() => handleSort('GW')}>GW {sortConfig.key === 'GW' ? (sortConfig.order === 'asc' ? <><RiArrowDownSFill color='red' size={20} /></> : <><RiArrowUpSFill color='green' size={20} /></>) : <RiArrowUpSFill color='green' size={20} />}</th>
+            {/* <th className="p-2 sm:py-10 text-left cursor-pointer max-w-28 items-center mt-3" onClick={() => handleSort('realTotalPoints')}>Total {sortConfig.key === 'realTotalPoints' ? (sortConfig.order === 'asc' ? <RiArrowDownSFill color='red' size={20} /> : <RiArrowUpSFill color='green' size={20} />) : <RiArrowUpSFill color='green' size={20} />}</th> */}
+            <th className="p-2 sm:py-10 text-left max-w-28 items-center mt-3">Total</th>
+            <th className="p-2 sm:py-10 text-left cursor-pointer max-w-28 flex items-center mt-3" onClick={handleSort}>
+              GW {sortConfig.order === 'asc' ? <RiArrowDownSFill color='red' size={20} /> : <RiArrowUpSFill color='green' size={20} />}
+            </th>
+
             <th className="p-2 sm:py-10 text-left  w-12">Captain</th>
             <th className="p-2 sm:py-10 text-left w-12">Vice</th>
             <th className="p-2 sm:py-10 text-left ">Chip</th>
@@ -216,6 +209,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
           </tr>
         </thead>
         <tbody>
+
           {sortedData?.sort((a,b) =>b.realTotalPoints - a.realTotalPoints).map((team, index) => {
             const teamDetails = fullTeam[team.entry] || {};
             const captainElement = teamDetails?.picks?.find((pick) => pick.is_captain)?.element;
@@ -229,18 +223,13 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
               }, 0) || 0;
             const eventRealPoints = totalTeamPoints - (teamDetails?.entry_history?.event_transfers_cost ?? 0)
             
-            
-            const teamPlayerIds = teamDetails?.picks?.map((pick) => pick.element) || [];
-            const teamPlayerNames = teamPlayerIds.map((id) => 
-              generalInfo?.elements?.find((p) => p.id === id)?.web_name || "Unknown"
-            );
             const ownsSelectedPlayer = selectedPlayer && teamDetails?.picks?.some((pick) => {
               const playerName = generalInfo?.elements?.find((p) => p.id === pick.element)?.web_name;
               return playerName === selectedPlayer;
             });
 
             return (
-                  < >
+                  <>
                     <tr key={team.id} onClick={() => handleToggleTeamPlayers(team.entry)} className={` text-xs sm:text-base cursor-pointer ${ownsSelectedPlayer ? "bg-green-200" : "odd:bg-gray-100 even:bg-white"}`}>
                       <td  className='p-2 sm:py-10 text-left max-w-14'>{index + 1}.</td>
                       <td className='p-2 sm:py-10'> 
