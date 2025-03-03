@@ -9,6 +9,7 @@ import Image from "next/image";
 import laptop from "../../public/images/laptop.png"
 import BlogCard from "./components/common/BlogCard";
 import Footer from "./components/common/Footer";
+import Link from "next/link";
 
 export default function Home() {
   const [teamId, setTeamId] = useState("");
@@ -94,23 +95,31 @@ export default function Home() {
                 {isLoading ? "Loading..." : "Lets Go"}
               </button>
             </form>
+            <div className="text-white text-left w-80 mx-auto font-medium">
+              <p>To find your FPL team ID:</p>
+              <ul className="list-decimal">
+                <li>Go to your <Link href="https://fantasy.premierleague.com/" className="text-blue-500 underline">FPL home page</Link> </li>
+                <li>Click on the points tab</li>
+                <li>Look at the address bar and copy the number that comes after &quot;entry/&quot;.</li>
+              </ul>
+            </div>
           </div>
         </div>
         {showLeague && <SelectLeague onClose={handleOnclose}/>}
 
         {error && <p className="text-center text-red-500 mt-4">Error fetching team</p>}
         
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 w-full gap-8 justify-center items-center text-center mx-auto p-32 px-16 sm:px-80 bg-white">
-          <div className="items-center justify-center mx-auto w-full">
-            <Image src={laptop} width={433} height={306} alt="Website preview"/>
+        <div className="sm:grid grid-rows-2 grid-cols-2 items-center bg-white sm:p-24 p-4">
+          <div className="mx-auto">
+            <Image src={laptop} width={700} height={700} alt="Website preview" className=""/>
           </div>
-          <div className="items-center justify-center my-auto">
-            <p className="sm:text-7xl text-xl font-semibold">LIVE DATA</p>
-            <p className="py-4 text-left truncate">We show your points, subs and rank in real-time!No waiting for FPL to update - see the true league impact of every goal, assist and clean sheet LIVE. We take care of the Autosubs, Captaincy switches and all the other stuff that can make it hard to know how well you are actually doing. Best of all, it is completely free.</p>
+          <div className="items-center sm:text-left text-center sm:px-16 px-4 justify-center">
+            <p className="sm:text-7xl text-4xl font-semibold ">LIVE DATA</p>
+            <p className="py-4">We show your points, subs and rank in real-time!No waiting for FPL to update - see the true league impact of every goal, assist and clean sheet LIVE. We take care of the Autosubs, Captaincy switches and all the other stuff that can make it hard to know how well you are actually doing. Best of all, it is completely free.</p>
           </div>
         </div>
 
-        <div className="flex-col sm:grid-cols-1 md:grid-cols-2 w-full gap-8 justify-center items-center text-center mx-auto p-32 px-8 sm:px-80">
+        {/* <div className="flex-col sm:grid-cols-1 md:grid-cols-2 w-full gap-8 justify-center items-center text-center mx-auto p-32 px-8 sm:px-80">
           <div>
             <p className="text-7xl font-semibold">FPL Tips and Content</p>
           </div>
@@ -120,13 +129,9 @@ export default function Home() {
             <BlogCard/>
           </div>
 
-        </div>
-        <Footer/>
-
-
-        
-
+        </div> */}
       </div>
+        <Footer/>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <div className="bg-[#002A95] absolute bottom-0 w-full p-12 sm:px-36 sm:flex flex-row justify-between items-center text-center">
+    <div className="bg-[#002A95] absolute w-full p-12 sm:px-36 sm:flex flex-row justify-between items-center text-center">
         <div className="flex justify-center">
             <Link href="/">
                 <Image src={logo} width='150' alt="Logo" />

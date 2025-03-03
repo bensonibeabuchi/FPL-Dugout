@@ -27,12 +27,11 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
 
   useEffect(() => {
     if (fullLeagueData?.standings?.results) {
-      // Map through teams and merge realTotalPoints from state
+ 
       const updatedTeams = fullLeagueData.standings.results.map(team => ({
         ...team,
-        realTotalPoints: teamRealPoints[team.entry] || 0, // Default to 0 if not found
+        realTotalPoints: teamRealPoints[team.entry] || 0, 
       }));
-      // Sort teams based on realTotalPoints
       setSortedData([...updatedTeams].sort((a, b) => b.realTotalPoints - a.realTotalPoints));
     }
   }, [fullLeagueData, teamRealPoints]); 
@@ -205,7 +204,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
             <th className="p-2 sm:py-10 text-left  w-12">Captain</th>
             <th className="p-2 sm:py-10 text-left w-12">Vice</th>
             <th className="p-2 sm:py-10 text-left ">Chip</th>
-            <th className="p-2 sm:py-10 text-left truncate">Hits</th>
+            <th className="p-2 sm:py-10 text-left truncate">Transfer(Hits)</th>
             <th className="p-2 sm:py-10 text-left max-w-14">Points from top</th>
           </tr>
         </thead>
