@@ -1,13 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
+import { useState, useEffect, useMemo } from 'react';
+import { RiArrowUpSFill, RiArrowDownSFill, RiCircleFill } from "react-icons/ri";
 import CompareTwoTeams from './CompareTwoTeams';
-import TeamHistory from './TeamHistory';
 import PlayerCardHorizontal from './PlayerCardHorizontal';
-import PlayerOwnership from './PlayerOwnership';
 import { useGetLeagueLiveTotalPointsQuery, useGetPlayersQuery } from '@/app/redux/services/fplApi';
 
 
-const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leagueName, gw, leagueId }) => {
+const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leagueName, gw, leagueId, myTeamId }) => {
   const [team1, setTeam1] = useState(null);
   const [team2, setTeam2] = useState(null);
   const [showComparison, setShowComaprison] = useState(false)
@@ -15,18 +13,150 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   const [comparisonSquads, setComparisonSquads] = useState(null)
   const [isExpanded, setExpandedTeam] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState("");
+  // const [sortedTeams, setSortedTeams] = useState( []);
+  const [sort, setSort] = useState({keyToSort: 'RANK', direction: 'asc'})
+
+  const headers = [
+    {
+      id: 1,
+      KEY: "rank_sort",
+      LABEL: "Rank"
+    },
+    {
+      id: 2,
+      KEY: "entry_name",
+      LABEL: "Team"
+    },
+    {
+      id: 3,
+      KEY: "live_total_points",
+      LABEL: "Total"
+    },
+    {
+      id: 4,
+      KEY: "EVENT_REAL_POINTS",
+      LABEL: "GW"
+    },
+    {
+      id: 5,
+      KEY: "CAPTAIN",
+      LABEL: "Captain"
+    },
+    {
+      id: 6,
+      KEY: "VICE",
+      LABEL: "Vice"
+    },
+    {
+      id: 7,
+      KEY: "CHIP",
+      LABEL: "Chip"
+    },
+    {
+      id: 8,
+      KEY: "TRANSFER_COST",
+      LABEL: "Transfer"
+    },
+    {
+      id: 9,
+      KEY: "POINTS",
+      LABEL: "Pts Frm Top"
+    },
+
+
+  ]
 
   const { data: teamsLiveTotalPoints } = useGetLeagueLiveTotalPointsQuery({ leagueId, gw }, {skip: !leagueId || !gw});
   const { data: player } = useGetPlayersQuery({ leagueId, gw });
   
-  const players = Object.entries(player?.ownership || {})
-  .map(([name, owners]) => ({ name, count: owners.length }))
-  .sort((a, b) => b.count - a.count);
+  const players = Object.entries(player?.ownership || {}).map(([name, owners]) => ({ name, count: owners.length })).sort((a, b) => b.count - a.count);
   
   const livePointsMap = teamsLiveTotalPoints?.reduce((acc, team) => {
     acc[team.teamId] = team.live_total_points;
     return acc;
   }, {});
+
+  const sortedTeams = useMemo(() => {
+    if (!fullLeagueData?.standings?.results || !livePointsMap) return [];
+
+    return [...fullLeagueData.standings.results].sort((a, b) => {
+        // Get additional details from fullTeam
+        const teamDetailsA = fullTeam[a.entry] || {};
+        const teamDetailsB = fullTeam[b.entry] || {};
+  
+        // Get team names (entry_name)
+        const teamNameA = a.entry_name || "Unknown";
+        const teamNameB = b.entry_name || "Unknown";
+  
+        // Calculate event real points (GW total - transfer cost)
+        const eventRealPointsA = (teamDetailsA?.picks?.reduce((total, player) => {
+          const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+          return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+        }, 0) || 0) - (teamDetailsA?.entry_history?.event_transfers_cost ?? 0);
+  
+        const eventRealPointsB = (teamDetailsB?.picks?.reduce((total, player) => {
+          const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+          return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+        }, 0) || 0) - (teamDetailsB?.entry_history?.event_transfers_cost ?? 0);
+  
+        // Get captain and vice-captain names
+        const captainElementA = teamDetailsA?.picks?.find((pick) => pick.is_captain)?.element;
+        const captainElementB = teamDetailsB?.picks?.find((pick) => pick.is_captain)?.element;
+        const captainNameA = generalInfo?.elements?.find((player) => player.id === captainElementA)?.web_name || "Unknown";
+        const captainNameB = generalInfo?.elements?.find((player) => player.id === captainElementB)?.web_name || "Unknown";
+  
+        const viceCaptainElementA = teamDetailsA?.picks?.find((pick) => pick.is_vice_captain)?.element;
+        const viceCaptainElementB = teamDetailsB?.picks?.find((pick) => pick.is_vice_captain)?.element;
+        const viceCaptainNameA = generalInfo?.elements?.find((player) => player.id === viceCaptainElementA)?.web_name || "Unknown";
+        const viceCaptainNameB = generalInfo?.elements?.find((player) => player.id === viceCaptainElementB)?.web_name || "Unknown";
+  
+        // Get transfer cost
+        const transferCostA = teamDetailsA?.entry_history?.event_transfers_cost ?? 0;
+        const transferCostB = teamDetailsB?.entry_history?.event_transfers_cost ?? 0;
+  
+        // Sorting logic based on selected key
+        switch (sort.keyToSort) {
+          case "rank_sort":
+          case "TOTAL":
+            return sort.direction === "asc"
+              ? a[sort.keyToSort] - b[sort.keyToSort]
+              : b[sort.keyToSort] - a[sort.keyToSort];
+  
+          case "entry_name":
+            return sort.direction === "asc"
+              ? teamNameA.localeCompare(teamNameB)
+              : teamNameB.localeCompare(teamNameA);
+  
+          case "live_total_points":
+            const livePointsA = livePointsMap[String(a.entry)] ?? 0;
+            const livePointsB = livePointsMap[String(b.entry)] ?? 0;
+            return sort.direction === "asc" ? livePointsA - livePointsB : livePointsB - livePointsA;
+  
+          case "CAPTAIN":
+            return sort.direction === "asc"
+              ? captainNameA.localeCompare(captainNameB)
+              : captainNameB.localeCompare(captainNameA);
+  
+          case "VICE":
+            return sort.direction === "asc"
+              ? viceCaptainNameA.localeCompare(viceCaptainNameB)
+              : viceCaptainNameB.localeCompare(viceCaptainNameA);
+  
+          case "EVENT_REAL_POINTS":
+            return sort.direction === "asc" ? eventRealPointsA - eventRealPointsB : eventRealPointsB - eventRealPointsA;
+  
+          case "TRANSFER_COST":
+            return sort.direction === "asc" ? transferCostA - transferCostB : transferCostB - transferCostA;
+  
+          default:
+            return 0; // No sorting if the key is not recognized
+        }
+      });
+  }, [sort, fullLeagueData, fullTeam, liveGameweek, livePointsMap, generalInfo]); // // Memoized dependencies
+  
+
+  
+
   
   const handleCompareTeams = () => {
     if (team1 && team2) {
@@ -101,6 +231,43 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   }).length || 0;
   
   const ownershipPercentage = ((selectedPlayerOwners / totalManagers) * 100).toFixed(2); // Convert to percentage
+
+
+
+  // const handleSortByGW = () => {
+  //   const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+  //   setSortOrder(newSortOrder);
+
+  //   const sortedData = [...sortedTeams].sort((a, b) => {
+  //     const teamDetailsA = fullTeam[a.entry] || {};
+  //     const teamDetailsB = fullTeam[b.entry] || {};
+
+  //     const totalPointsA = teamDetailsA?.picks?.reduce((total, player) => {
+  //       const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+  //       return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+  //     }, 0) || 0;
+
+  //     const totalPointsB = teamDetailsB?.picks?.reduce((total, player) => {
+  //       const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+  //       return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+  //     }, 0) || 0;
+
+  //     return newSortOrder === "asc" ? totalPointsA - totalPointsB : totalPointsB - totalPointsA;
+  //   });
+
+  //   setSortedTeams(sortedData);
+  // };
+
+
+  function handleHeaderClick(header) {
+    // console.log(header)
+    setSort((prevSort) => ({
+      keyToSort: header.KEY,
+      direction:
+        header.KEY === prevSort.keyToSort ? prevSort.direction === 'asc' ? 'desc' : 'asc' : 'desc'
+    }));
+  }
+
   
   return (
     <div className="w-full">
@@ -150,7 +317,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
         gw={gw}
         onClose={handleOnclose}
         fullTeam={fullTeam}
-        fullLeagueData={fullLeagueData?.standings?.results}
         liveGameweek={liveGameweek}
         generalInfo={generalInfo}
         /> }
@@ -161,20 +327,40 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
       <table className="sm:min-w-[320px] w-full border border-gray-300 table-auto">
         <thead>
           <tr className="bg-[#202020] text-white text-[8px] sm:text-base">
-            <th> Rank </th>
+            {headers.map((header, index) => (
+              <th key={index} onClick={() => handleHeaderClick(header)} className="p-2 sm:py-10 text-left sm:max-w-14 max-w-12 cursor-pointer truncate font-normal sm:font-medium" >
+                <span>{header.LABEL}</span>
+                {header.KEY === sort.keyToSort && (
+                  <span> {sort.direction === "asc" ? (
+                    <RiArrowUpSFill color="green" />
+                  ) : (
+                    <RiArrowDownSFill color="red" />
+                  )} </span>
+                )}
+              </th>
+            ))}
+
+            {/* <th onClick={() => handleHeaderClick(header)}> {header.LABEL} </th>
             <th className="p-2 sm:py-10 text-left min-w-14 max-w-16">Team</th>
             <th className="p-2 sm:py-10 text-left w-12">Total</th>
             <th className="p-2 sm:py-10 text-left w-12">GW</th>
+            <th className="p-2 sm:py-10 text-left sm:max-w-14 max-w-10 cursor-pointer" onClick={handleSortByGW}>
+              <div className='max-w-14 flex flex-row items-center justify-center mx-auto'>
+                <p>GW</p>
+                <>{sortOrder === "asc" ? <RiArrowUpSFill color='green' className='' /> : <RiArrowDownSFill color='red' className='' />}</>
+              </div>
+              
+            </th>
             <th className="p-2 sm:py-10 text-left w-12">Captain</th>
             <th className="p-2 sm:py-10 text-left w-12">Vice</th>
             <th className="p-2 sm:py-10 text-left ">Chip</th>
             <th className="p-2 sm:py-10 text-left truncate">Transfer</th>
-            <th className="p-2 sm:py-10 text-left max-w-14">Pts from top</th>
+            <th className="p-2 sm:py-10 text-left max-w-14">Pts from top</th>  */}
           </tr>
         </thead>
         <tbody>
 
-          {fullLeagueData?.standings?.results.map((team, index) => {
+          {sortedTeams.map((team, index) => {
             const teamDetails = fullTeam[team.entry] || {};
             const captainElement = teamDetails?.picks?.find((pick) => pick.is_captain)?.element;
             const viceCaptainElement = teamDetails?.picks?.find((pick) => pick.is_vice_captain)?.element;
@@ -182,28 +368,44 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
             const viceCaptainName = generalInfo?.elements?.find((player) => player.id === viceCaptainElement)?.web_name || "Unknown";
             const totalTeamPoints = teamDetails?.picks?.reduce((total, player) => {
               const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-              const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
-                return total + eventPoints;
-              }, 0) || 0;
-            const eventRealPoints = totalTeamPoints - (teamDetails?.entry_history?.event_transfers_cost ?? 0)
-            
+              return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+            }, 0) || 0;
+
+            const eventRealPoints = totalTeamPoints - (teamDetails?.entry_history?.event_transfers_cost ?? 0);
+ 
             const ownsSelectedPlayer = selectedPlayer && teamDetails?.picks?.some((pick) => {
               const playerName = generalInfo?.elements?.find((p) => p.id === pick.element)?.web_name;
               return playerName === selectedPlayer;
             });
 
-
             return (
                   <>
-                    <tr key={team.id} onClick={() => handleToggleTeamPlayers(team.entry)} className={` text-xs sm:text-base cursor-pointer ${ownsSelectedPlayer ? "bg-green-200" : "odd:bg-gray-100 even:bg-white"}`}>
-                      <td  className='p-2 sm:py-10 text-left max-w-14'>{index + 1}.</td>
+                    <tr key={team.id} onClick={() => handleToggleTeamPlayers(team.entry)} className={` text-xs sm:text-base cursor-pointer ${ownsSelectedPlayer ? "!bg-green-200" : "odd:bg-gray-100 even:bg-white"} ${Number(myTeamId) === Number(team.entry) ? "!bg-blue-200" : "" } ` }>
+                      <td  className='p-2 sm:py-10 text-left max-w-14'>
+                        <div>
+                          <div className='flex-col items-center'>
+                            <div className='flex flex-row items-center'>
+                              <p>{team.rank_sort}</p>
+                              <p>
+                                {team.rank_sort < team.last_rank ? (
+                                  <RiArrowUpSFill color="green" />
+                                ) : team.rank_sort > team.last_rank ? (
+                                  <RiArrowDownSFill color="red" />
+                                ) : (
+                                  <RiCircleFill color="gray" size={12} />
+                                )}
+                              </p>
+                            </div> 
+                            <p className='text-xs'>[{team.last_rank}]</p> 
+                          </div>
+                        </div></td>
                       <td className='p-2 sm:py-10 max-w-20'> 
                         <div className="flex-col">
                           <div className="text-left text-xs sm:text-base truncate font-semibold sm:font-bold">{team.entry_name}</div>
                           <div className="text-xs sm:text-sm truncate">{team.player_name}</div> 
                         </div>
                       </td>
-                      <td  className='p-2 sm:py-10 text-left max-w-14'>
+                      <td className='p-2 sm:py-10 text-left max-w-14'>
                       {livePointsMap?.[String(team.entry)] !== undefined ? (
                             livePointsMap[String(team.entry)]
                         ) : (

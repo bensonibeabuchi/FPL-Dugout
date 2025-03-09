@@ -269,6 +269,7 @@ export default function Page() {
                     {/* LEAGUE DETAILS HERE */}
                     <LeagueTable 
                     fullLeagueData={leagueData}
+                    myTeamId={teamId}
                     gw={gw}
                     leagueId={leagueId}
                     leagueName={leagueName}

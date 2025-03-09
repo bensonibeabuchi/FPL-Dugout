@@ -2,7 +2,7 @@ import { IoIosCloseCircle } from "react-icons/io";
 import PlayerCardLine from "./PlayerCardLine";
 import { useGetTeamLiveTotalPointsQuery } from "@/app/redux/services/fplApi";
 
-const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, fullLeagueData, gw, fullTeam, liveGameweek, generalInfo}) => {
+const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, gw, fullTeam, liveGameweek, generalInfo}) => {
 
     const captainElement = fullTeam[team1]?.picks?.find(pick => pick.is_captain)?.element;
     const captainElement2 = fullTeam[team2]?.picks?.find(pick => pick.is_captain)?.element;
