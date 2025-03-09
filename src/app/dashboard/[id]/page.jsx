@@ -82,7 +82,7 @@ export default function Page() {
     );
     const liveTotalPoints = teamsLiveTotalPoints?.live_total_points
 
-    if (isLoading) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Loading league data...</p></div>;;
+    if (isLoading) return <div className="justify-center items-center flex flex-col gap-4 text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Loading league data...</p> <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-blue-500"></div> </div>;;
     if (error) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Error loading league data</p></div>;
 
     return (

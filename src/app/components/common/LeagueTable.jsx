@@ -154,9 +154,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
       });
   }, [sort, fullLeagueData, fullTeam, liveGameweek, livePointsMap, generalInfo]); // // Memoized dependencies
   
-
-  
-
   
   const handleCompareTeams = () => {
     if (team1 && team2) {
@@ -233,42 +230,14 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   const ownershipPercentage = ((selectedPlayerOwners / totalManagers) * 100).toFixed(2); // Convert to percentage
 
 
-
-  // const handleSortByGW = () => {
-  //   const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
-  //   setSortOrder(newSortOrder);
-
-  //   const sortedData = [...sortedTeams].sort((a, b) => {
-  //     const teamDetailsA = fullTeam[a.entry] || {};
-  //     const teamDetailsB = fullTeam[b.entry] || {};
-
-  //     const totalPointsA = teamDetailsA?.picks?.reduce((total, player) => {
-  //       const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-  //       return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
-  //     }, 0) || 0;
-
-  //     const totalPointsB = teamDetailsB?.picks?.reduce((total, player) => {
-  //       const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-  //       return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
-  //     }, 0) || 0;
-
-  //     return newSortOrder === "asc" ? totalPointsA - totalPointsB : totalPointsB - totalPointsA;
-  //   });
-
-  //   setSortedTeams(sortedData);
-  // };
-
-
   function handleHeaderClick(header) {
-    // console.log(header)
     setSort((prevSort) => ({
       keyToSort: header.KEY,
       direction:
         header.KEY === prevSort.keyToSort ? prevSort.direction === 'asc' ? 'desc' : 'asc' : 'desc'
     }));
   }
-
-  
+ 
   return (
     <div className="w-full">
       
@@ -339,23 +308,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
                 )}
               </th>
             ))}
-
-            {/* <th onClick={() => handleHeaderClick(header)}> {header.LABEL} </th>
-            <th className="p-2 sm:py-10 text-left min-w-14 max-w-16">Team</th>
-            <th className="p-2 sm:py-10 text-left w-12">Total</th>
-            <th className="p-2 sm:py-10 text-left w-12">GW</th>
-            <th className="p-2 sm:py-10 text-left sm:max-w-14 max-w-10 cursor-pointer" onClick={handleSortByGW}>
-              <div className='max-w-14 flex flex-row items-center justify-center mx-auto'>
-                <p>GW</p>
-                <>{sortOrder === "asc" ? <RiArrowUpSFill color='green' className='' /> : <RiArrowDownSFill color='red' className='' />}</>
-              </div>
-              
-            </th>
-            <th className="p-2 sm:py-10 text-left w-12">Captain</th>
-            <th className="p-2 sm:py-10 text-left w-12">Vice</th>
-            <th className="p-2 sm:py-10 text-left ">Chip</th>
-            <th className="p-2 sm:py-10 text-left truncate">Transfer</th>
-            <th className="p-2 sm:py-10 text-left max-w-14">Pts from top</th>  */}
           </tr>
         </thead>
         <tbody>
@@ -398,7 +350,8 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
                             </div> 
                             <p className='text-xs'>[{team.last_rank}]</p> 
                           </div>
-                        </div></td>
+                        </div>
+                      </td>
                       <td className='p-2 sm:py-10 max-w-20'> 
                         <div className="flex-col">
                           <div className="text-left text-xs sm:text-base truncate font-semibold sm:font-bold">{team.entry_name}</div>
