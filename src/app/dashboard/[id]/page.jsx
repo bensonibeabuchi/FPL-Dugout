@@ -2,7 +2,7 @@
 import Navbar from '@/app/components/common/Navbar';
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery } from "@/app/redux/services/fplApi";
+import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery, useGetTeamEVentPointsQuery, useGetTeamLiveTotalPointsQuery } from "@/app/redux/services/fplApi";
 import { useDispatch } from "react-redux";
 import { fplApi } from '@/app/redux/services/fplApi';
 import PlayerCard from '@/app/components/common/PlayerCard';
@@ -25,23 +25,13 @@ export default function Page() {
     
     const dispatch = useDispatch();
     const { data: leagueData, error, isLoading } = useGetLeagueQuery({ leagueId, page }, {skip: !leagueId});
-    const { data: leagueData2 } = useGetLeagueQuery({ leagueId, page:2 }, {skip: !leagueId});
-    const { data: leagueData3 } = useGetLeagueQuery({ leagueId, page:3 }, {skip: !leagueId});
-    const { data: leagueData4 } = useGetLeagueQuery({ leagueId, page:4 }, {skip: !leagueId});
     const leagueName = leagueData?.league?.name
-    const fullLeagueData = leagueData && leagueData2 && leagueData3 && leagueData4 ? {
-        ...leagueData, standings: {...leagueData.standings, results: [...leagueData.standings.results, ...leagueData2.standings.results, ...leagueData3.standings.results, ...leagueData4.standings.results] //concating results
-        }
-    } : leagueData || leagueData2 || leagueData3 || leagueData4  // If one of them is undefined, fallback to the other
-
     const { data: fullTeamDetailsData } = useGetFullTeamDetailsQuery({ teamId, gw }, { skip: !teamId || !gw });
     const { data: generalInfo } = useGetGeneralInfoQuery();
     const { data: liveGameweek } = useGetLiveGameweekDataQuery({ event_id }, { skip: !event_id });
-    
 
     useEffect(() => {
         if (typeof window !== "undefined"){
-
             const savedTeamData = localStorage.getItem("teamData");
             if (savedTeamData) {
                 const parsedData = JSON.parse(savedTeamData);
@@ -54,8 +44,8 @@ export default function Page() {
     }, []);
 
     useEffect(() => {
-        if (fullLeagueData?.standings?.results && gw) {
-            fullLeagueData?.standings?.results.forEach(async(team) => {
+        if (leagueData?.standings?.results && gw) {
+            leagueData?.standings?.results.forEach(async(team) => {
                 try {
                     const response = await dispatch(
                         fplApi.endpoints.getFullTeamDetails.initiate({
@@ -69,8 +59,6 @@ export default function Page() {
             });
         }
     }, [leagueData, dispatch, gw]);
-
-
  
     const toggleView = () => {
         setPitchView((prev) => {
@@ -85,13 +73,14 @@ export default function Page() {
 
     const elementTypes = [1, 2, 3, 4, 5];
 
-    const totalTeamPoints = fullTeamDetailsData?.picks?.reduce((total, player) => {
-        const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
-        const eventPoints = (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
-        return total + eventPoints;
-    }, 0) || 0;
-    
-    const eventRealPoints = totalTeamPoints - (fullTeamDetailsData?.entry_history?.event_transfers_cost ?? 0) 
+    const { data: eventPointsData } = useGetTeamEVentPointsQuery({ teamId, gw }, { skip: !teamId || !gw });
+    const eventRealPoints = eventPointsData?.event_real_points
+
+    const { data: teamsLiveTotalPoints } = useGetTeamLiveTotalPointsQuery(
+        { teamId: teamId, gw: gw }, 
+        { skip: !teamId || !gw }
+    );
+    const liveTotalPoints = teamsLiveTotalPoints?.live_total_points
 
     if (isLoading) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Loading league data...</p></div>;;
     if (error) return <div className="justify-center items-center flex text-center h-screen text-lg bg-gray-800 text-white font-medium"><p>Error loading league data</p></div>;
@@ -127,11 +116,13 @@ export default function Page() {
                                         </tr>
                                         <tr>
                                             <td>Total: </td>
-                                            <td><TeamHistory 
+                                            <td>{liveTotalPoints}
+                                            </td>
+                                            {/* <td><TeamHistory 
                                                 eventRealPoints={eventRealPoints}
                                                 teamId={teamId} 
                                                 />
-                                            </td>
+                                            </td> */}
                                             {/* <td>{fullTeamDetailsData?.entry_history.total_points}</td> */}
                                         </tr>
                                         <tr>
@@ -258,7 +249,6 @@ export default function Page() {
                                             const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
                                             const eventPoints = totalPoints * (player.multiplier ?? 1); 
                                                 
-                                                
                                                 return (
                                                     <div key={player.element} className="">
                                                         <PlayerCard
@@ -278,10 +268,9 @@ export default function Page() {
                     
                     {/* LEAGUE DETAILS HERE */}
                     <LeagueTable 
-                    fullLeagueData={fullLeagueData}
+                    fullLeagueData={leagueData}
                     gw={gw}
                     leagueId={leagueId}
-                    // teamHistory={teamHistory}
                     leagueName={leagueName}
                     fullTeam={fullTeam}
                     liveGameweek={liveGameweek}

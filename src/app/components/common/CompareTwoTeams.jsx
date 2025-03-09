@@ -1,8 +1,8 @@
 import { IoIosCloseCircle } from "react-icons/io";
-import { useState, useEffect } from 'react';
 import PlayerCardLine from "./PlayerCardLine";
+import { useGetTeamLiveTotalPointsQuery } from "@/app/redux/services/fplApi";
 
-const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, fullLeagueData, fullTeam, liveGameweek, generalInfo}) => {
+const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, fullLeagueData, gw, fullTeam, liveGameweek, generalInfo}) => {
 
     const captainElement = fullTeam[team1]?.picks?.find(pick => pick.is_captain)?.element;
     const captainElement2 = fullTeam[team2]?.picks?.find(pick => pick.is_captain)?.element;
@@ -34,8 +34,6 @@ const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, f
     const transferCost = fullTeam[team1]?.entry_history?.event_transfers_cost ?? "0"
     const transferCost2 = fullTeam[team2]?.entry_history?.event_transfers_cost ?? "0"
 
-
-
     // Extract team player lists
     const team1Players = fullTeam[team1]?.picks || [];
     const team2Players = fullTeam[team2]?.picks || [];
@@ -63,7 +61,11 @@ const CompareTwoTeams = ({onClose, comparisonSquads, sortedData, team1, team2, f
         playerInfo: generalInfo?.elements?.find(p => p.id === player.element) || {},
     }));
 
+    const { data: teamsLiveTotalPoints } = useGetTeamLiveTotalPointsQuery({ teamId: team1, gw: gw });
+    const liveTotalPoints = teamsLiveTotalPoints?.live_total_points
 
+    const { data: teamsLiveTotalPoints2 } = useGetTeamLiveTotalPointsQuery({ teamId: team2, gw: gw });
+    const liveTotalPoints2 = teamsLiveTotalPoints2?.live_total_points
 
 return (
 <div
@@ -82,7 +84,7 @@ return (
             {/* Team 1 Squad */}
             <div>
                 <h3 className="font-semibold">{sortedData.find((t) => t.entry === team1)?.player_name}</h3>
-                <h3 className="font-medium">Total: {sortedData.find((t) => t.entry === team1)?.total} </h3>
+                <h3 className="font-medium">Total: {liveTotalPoints} </h3>
                 <h3 className="font-medium">GW: {gwLivePoints-transferCost} </h3>
 
                 <p>Captain: {captainName}</p>
@@ -115,7 +117,7 @@ return (
             {/* Team 2 Squad */}
             <div>
                 <h3 className="font-semibold">{sortedData.find((t) => t.entry === team2)?.player_name}</h3>
-                <h3 className="font-medium">Total: {sortedData.find((t) => t.entry === team2)?.total} </h3>
+                <h3 className="font-medium">Total: {liveTotalPoints2} </h3>
                 <h3 className="font-medium">GW: {gwLivePoints2-transferCost2} </h3>
                 <p>Captain: {captainName2}</p>
                 <p>Chip: {active_chip2 === "manager" ? "Asst Manager" :
