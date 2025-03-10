@@ -14,16 +14,16 @@ export default function Footer() {
             </Link>
         </div>
         <div className="text-white flex gap-8 font-medium sm:text-lg text-sm justify-center">
-            <Link href="/about">
+            <Link href="/">
             <p>About</p>
             </Link>
-            <Link href="/terms">
+            <Link href="/">
             <p>Terms of Use</p>
             </Link>
-            <Link href="/about">
+            <Link href="/">
             <p>Privacy Policy</p>
             </Link>
-            <Link href="/about">
+            <Link href="/">
             <p>Contact us</p>
             </Link>
            

@@ -2,8 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const fplApi = createApi({
   reducerPath: "fplApi",
-  // baseQuery: fetchBaseQuery({ baseUrl: "http://127.0.0.1:8000/api/" }),
-  baseQuery: fetchBaseQuery({ baseUrl: "https://fpl-dugout-backend-deploment.up.railway.app/api/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: "http://127.0.0.1:8000/api/" }),
+  // baseQuery: fetchBaseQuery({ baseUrl: "https://fpl-dugout-backend-deploment.up.railway.app/api/" }),
   endpoints: (builder) => ({
     getTeam: builder.query({
       query: (teamId) => `team/${teamId}/`,

@@ -65,12 +65,15 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
 
   ]
 
-  const { data: teamsLiveTotalPoints } = useGetLeagueLiveTotalPointsQuery({ leagueId, gw }, {skip: !leagueId || !gw});
+  const { data: teamsLiveTotalPoints, isLoading } = useGetLeagueLiveTotalPointsQuery({ leagueId, gw }, {skip: !leagueId || !gw});
+  const teams_live_points = teamsLiveTotalPoints?.teams_live_points
+  const highestPoint = teamsLiveTotalPoints?.highest_live_points
   const { data: player } = useGetPlayersQuery({ leagueId, gw });
+  console.log(teamsLiveTotalPoints)
   
   const players = Object.entries(player?.ownership || {}).map(([name, owners]) => ({ name, count: owners.length })).sort((a, b) => b.count - a.count);
   
-  const livePointsMap = teamsLiveTotalPoints?.reduce((acc, team) => {
+  const livePointsMap = teams_live_points?.reduce((acc, team) => {
     acc[team.teamId] = team.live_total_points;
     return acc;
   }, {});
@@ -236,6 +239,9 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
         header.KEY === prevSort.keyToSort ? prevSort.direction === 'asc' ? 'desc' : 'asc' : 'desc'
     }));
   }
+
+  if (isLoading) return <div className="justify-center items-center flex flex-col gap-4 text-center w-full text-lg bg-gray-800 text-white font-medium"><p>Loading league data...</p> <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-blue-500"></div> </div>;;
+
  
   return (
     <div className="w-full">
@@ -381,7 +387,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
                       <td className='p-2 sm:py-10 text-left max-w-14'>
                         {teamDetails?.entry_history?.event_transfers}({teamDetails?.entry_history?.event_transfers_cost ? `-${teamDetails.entry_history.event_transfers_cost}` : 0})
                       </td>
-                      <td className='p-2 sm:py-10 text-left max-w-14'>HighPts</td>
+                      <td className='p-2 sm:py-10 text-left max-w-14'>{ livePointsMap?.[String(team.entry)] - highestPoint}</td>
                     </tr>
 
                     {isExpanded === team.entry && (
