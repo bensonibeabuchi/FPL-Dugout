@@ -2,14 +2,13 @@
 import Navbar from '@/app/components/common/Navbar';
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery, useGeth2hLeagueQuery } from "@/app/redux/services/fplApi";
+import { useGetFullTeamDetailsQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGeth2hLeagueQuery } from "@/app/redux/services/fplApi";
 import { useDispatch } from "react-redux";
 import { fplApi } from '@/app/redux/services/fplApi';
 import PlayerCard from '@/app/components/common/PlayerCard';
 import PlayerCardLine from '@/app/components/common/PlayerCardLine';
 import { PiToggleRightFill, PiToggleLeftFill } from "react-icons/pi";
 import LeagueTable from '@/app/components/common/LeagueTable';
-import TeamHistory from '@/app/components/common/TeamHistory';
 
 export default function Page() {
     const [userTeam, setUserTeam] = useState(null);
@@ -111,12 +110,8 @@ export default function Page() {
                                         </tr>
                                         <tr>
                                             <td>Total: </td>
-                                            <td><TeamHistory 
-                                                eventRealPoints={eventRealPoints}
-                                                teamId={teamId} 
-                                                />
-                                            </td>
-                                            {/* <td>{fullTeamDetailsData?.entry_history.total_points}</td> */}
+                                         
+                                            <td>{fullTeamDetailsData?.entry_history.total_points}</td>
                                         </tr>
                                         <tr>
                                             <td>Chip: </td>

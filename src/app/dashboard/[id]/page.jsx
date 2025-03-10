@@ -2,14 +2,13 @@
 import Navbar from '@/app/components/common/Navbar';
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamHistoryQuery, useGetTeamEVentPointsQuery, useGetTeamLiveTotalPointsQuery } from "@/app/redux/services/fplApi";
+import { useGetFullTeamDetailsQuery, useGetLeagueQuery, useGetGeneralInfoQuery, useGetLiveGameweekDataQuery, useGetTeamEVentPointsQuery, useGetTeamLiveTotalPointsQuery } from "@/app/redux/services/fplApi";
 import { useDispatch } from "react-redux";
 import { fplApi } from '@/app/redux/services/fplApi';
 import PlayerCard from '@/app/components/common/PlayerCard';
 import PlayerCardLine from '@/app/components/common/PlayerCardLine';
 import { PiToggleRightFill, PiToggleLeftFill } from "react-icons/pi";
 import LeagueTable from '@/app/components/common/LeagueTable';
-import TeamHistory from '@/app/components/common/TeamHistory';
 
 export default function Page() {
     const [userTeam, setUserTeam] = useState(null);
@@ -21,8 +20,7 @@ export default function Page() {
     const [event_id, setEventId] =useState("")
     const [fullTeam, setFullTeam] = useState({})
     const [pitchView, setPitchView] = useState(() => {return JSON.parse(localStorage.getItem("pitchView")) ?? true;});
-    
-    
+
     const dispatch = useDispatch();
     const { data: leagueData, error, isLoading } = useGetLeagueQuery({ leagueId, page }, {skip: !leagueId});
     const leagueName = leagueData?.league?.name
@@ -118,12 +116,6 @@ export default function Page() {
                                             <td>Total: </td>
                                             <td>{liveTotalPoints}
                                             </td>
-                                            {/* <td><TeamHistory 
-                                                eventRealPoints={eventRealPoints}
-                                                teamId={teamId} 
-                                                />
-                                            </td> */}
-                                            {/* <td>{fullTeamDetailsData?.entry_history.total_points}</td> */}
                                         </tr>
                                         <tr>
                                             <td>Chip: </td>

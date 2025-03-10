@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { RiArrowUpSFill, RiArrowDownSFill, RiCircleFill } from "react-icons/ri";
 import CompareTwoTeams from './CompareTwoTeams';
 import PlayerCardHorizontal from './PlayerCardHorizontal';
@@ -13,7 +13,6 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   const [comparisonSquads, setComparisonSquads] = useState(null)
   const [isExpanded, setExpandedTeam] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState("");
-  // const [sortedTeams, setSortedTeams] = useState( []);
   const [sort, setSort] = useState({keyToSort: 'RANK', direction: 'asc'})
 
   const headers = [
@@ -152,7 +151,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
             return 0; // No sorting if the key is not recognized
         }
       });
-  }, [sort, fullLeagueData, fullTeam, liveGameweek, livePointsMap, generalInfo]); // // Memoized dependencies
+  }, [sort, fullLeagueData, fullTeam, liveGameweek, livePointsMap, generalInfo]);
   
   
   const handleCompareTeams = () => {
@@ -227,7 +226,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
     return teamPlayerNames.some(name => name?.trim().toLowerCase() === selectedPlayer?.trim().toLowerCase());
   }).length || 0;
   
-  const ownershipPercentage = ((selectedPlayerOwners / totalManagers) * 100).toFixed(2); // Convert to percentage
+  const ownershipPercentage = ((selectedPlayerOwners / totalManagers) * 100).toFixed(2);
 
 
   function handleHeaderClick(header) {
@@ -298,6 +297,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
           <tr className="bg-[#202020] text-white text-[8px] sm:text-base">
             {headers.map((header, index) => (
               <th key={index} onClick={() => handleHeaderClick(header)} className="p-2 sm:py-10 text-left sm:max-w-14 max-w-12 cursor-pointer truncate font-normal sm:font-medium" >
+                <div className='flex flex-row items-center'>
                 <span>{header.LABEL}</span>
                 {header.KEY === sort.keyToSort && (
                   <span> {sort.direction === "asc" ? (
@@ -306,6 +306,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
                     <RiArrowDownSFill color="red" />
                   )} </span>
                 )}
+                </div>
               </th>
             ))}
           </tr>
@@ -340,9 +341,9 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
                               <p>{team.rank_sort}</p>
                               <p>
                                 {team.rank_sort < team.last_rank ? (
-                                  <RiArrowUpSFill color="green" />
+                                  <RiArrowUpSFill color="green" size={25} />
                                 ) : team.rank_sort > team.last_rank ? (
-                                  <RiArrowDownSFill color="red" />
+                                  <RiArrowDownSFill color="red" size={25} />
                                 ) : (
                                   <RiCircleFill color="gray" size={12} />
                                 )}
