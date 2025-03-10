@@ -15,7 +15,7 @@ export default function Home() {
   const [teamId, setTeamId] = useState("");
   const [submittedTeamId, setSubmittedTeamId] = useState(null);
   const dispatch = useDispatch();
-  const [showLeague, setShowLeague] = useState(true)
+  const [showLeague, setShowLeague] = useState(false)
 
   const userTeam = useSelector((state) => state.team.teamData);
 
@@ -95,12 +95,12 @@ export default function Home() {
                 {isLoading ? "Loading..." : "Lets Go"}
               </button>
             </form>
-            <div className="text-white text-left w-80 mx-auto font-medium">
+            <div className="text-white text-center w-80 mx-auto font-medium">
               <p>To find your FPL team ID:</p>
-              <ul className="list-decimal">
-                <li>Go to your <Link href="https://fantasy.premierleague.com/" className="text-blue-500 underline">FPL home page</Link> </li>
-                <li>Click on the points tab</li>
-                <li>Look at the address bar and copy the number that comes after &quot;entry/&quot;.</li>
+              <ul className="text-center">
+                <li>1. Go to your <Link href="https://fantasy.premierleague.com/" className="text-blue-500 underline">FPL home page</Link> </li>
+                <li>2. Click on the points tab</li>
+                <li>3. Look at the address bar and copy the number that comes after &quot;entry/&quot;.</li>
               </ul>
             </div>
           </div>
