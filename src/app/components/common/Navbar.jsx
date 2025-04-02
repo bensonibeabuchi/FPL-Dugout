@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowUp } from "react-icons/io";
+import { useRouter } from "next/navigation";
 
 
 
@@ -13,6 +14,8 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const [userTeam, setUserTeam] = useState(null);
+    const router = useRouter();
+
     
 
     useEffect(() => {
@@ -28,10 +31,16 @@ export default function Navbar() {
     useEffect(() => {
         const savedTeamData = localStorage.getItem("teamData");
         if (savedTeamData) {
-            // Parse the string back into an object if it's a JSON string
-            setUserTeam(JSON.parse(savedTeamData));
+            try {
+                setUserTeam(JSON.parse(savedTeamData));
+            } catch (error) {
+                console.error("Error parsing teamData from: ", error);
+                setUserTeam(null)
+            }
+        }  else {
+            router.push
         }
-    }, []);  // Empty dependency array makes this run only once, after the first render
+    }, []);
 
 
   return (

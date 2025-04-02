@@ -14,7 +14,7 @@ const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints, playerColor
     );
 
     return (
-        <div suppressHydrationWarning className="sm:w-14 w-12 flex flex-col items-center">
+        <div suppressHydrationWarning className="sm:w-14 w-12 flex flex-col items-center mt-1">
             
             {isLoading ? (
                 <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14 " />
@@ -24,11 +24,19 @@ const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints, playerColor
                 <Image src={ unknown} alt={web_name} width={200} height={200} className="object-contain w-14 h-14" />
             )}
             <p suppressHydrationWarning className="bg-[#32383c] rounded-t-md sm:text-[10px] text-[8px] text-center font-semibold truncate text-white px-1 py-1 w-full">
-                {web_name} <span className="">{isCaptain ? "C" : ""} {isViceCaptain ? "VC" : ""}</span> 
+                {web_name} 
             </p>
+            {(isCaptain || isViceCaptain) && (
+                <div className="absolute ml-12">
+                    <p className="bg-white text-black py-[2px] px-2 sm:text-[10px] font-bold text-[8px] text-center rounded-full">
+                        {isCaptain ? "C" : ""} {isViceCaptain ? "V" : ""}
+                    </p>
+                </div>
+            )}
             <p suppressHydrationWarning className="bg-[#3a3f43] rounded-b-md sm:text-[10px] text-[8px] text-center truncate text-white px-1 py-1 w-full">
                 {eventPoints} pts
             </p>
+            <p>{playerColor}</p>
         </div>
     );
 };

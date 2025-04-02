@@ -174,30 +174,28 @@ export default function Page() {
                                         </tr>
 
                                         {/* BENCH PLAYER  */}
-                                        {elementTypes.map((type) => 
-                                            fullTeamDetailsData?.picks.slice(11).filter((player) => player.element_type === type).map((player) => {
-                                                const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
-                                                // Find player's live gameweek points
-                                                const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
-                                                const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
-                                                const eventPoints = totalPoints * (player.multiplier >= 1 ? player.multiplier : 1); // Multiply by multiplier
+                                        {fullTeamDetailsData?.picks.slice(11).map((player) => {
+                                            const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
+                                            
+                                            // Find player's live gameweek points
+                                            const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
+                                            const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
+                                            const eventPoints = totalPoints * (player.multiplier >= 1 ? player.multiplier : 1); // Multiply by multiplier
 
-                                                return (
-                                                    <tr key={player.element} className="odd:bg-gray-300 even:bg-gray-200 text-black">
-                                                        <td className="p-2" >
-                                                                <PlayerCardLine
-                                                                    key={player.element}
-                                                                    player={matchedPlayer}
-                                                                    // eventPoints={eventPoints}
-                                                                    isCaptain={player.is_captain}
-                                                                    isViceCaptain={player.is_vice_captain}
-                                                                    />
-                                                        </td>
-                                                        <td className="p-2">{eventPoints}</td>
-                                                    </tr>
-                                                    );
-                                                })
-                                        )}
+                                            return (
+                                                <tr key={player.element} className="odd:bg-gray-300 even:bg-gray-200 text-black">
+                                                    <td className="p-2">
+                                                        <PlayerCardLine
+                                                            key={player.element}
+                                                            player={matchedPlayer}
+                                                            isCaptain={player.is_captain}
+                                                            isViceCaptain={player.is_vice_captain}
+                                                        />
+                                                    </td>
+                                                    <td className="p-2">{eventPoints}</td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
 
@@ -232,27 +230,27 @@ export default function Page() {
 
                                 {/* BENCH VIEW  */}
                                 <div className="flex w-full gap-4 bg-black bg-opacity-50 p-6 mt-2 justify-center">
-                                    {elementTypes.map((type) => 
-                                        fullTeamDetailsData?.picks.slice(11, 16).filter((player) => player.element_type === type).map((player) => {
-                                            const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
-                                            // Find player's live gameweek points
-                                            const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
-                                            const playerColor = matchedPlayerPoints?.stats?.minutes
-                                            const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
-                                            const eventPoints = totalPoints * (player.multiplier ?? 1); 
-                                                
-                                                return (
-                                                    <div key={player.element} className="">
-                                                        <PlayerCard
-                                                        key={player.element}
-                                                        playerColor={playerColor}
-                                                        player={matchedPlayer}
-                                                        eventPoints={matchedPlayer?.event_points ?? 0}
-                                                        />
-                                                    </div>
-                                                );
-                                            })
-                                    )}
+                                
+                                {fullTeamDetailsData?.picks.slice(11, 16).map((player) => {
+                                    const matchedPlayer = generalInfo?.elements?.find((element) => element.id === player.element);
+                                    
+                                    // Find player's live gameweek points
+                                    const matchedPlayerPoints = liveGameweek?.elements?.find(element => element.id === player.element);
+                                    const playerColor = matchedPlayerPoints?.stats?.minutes;
+                                    const totalPoints = matchedPlayerPoints?.stats?.total_points ?? 0;
+                                    const eventPoints = totalPoints * (player.multiplier ?? 1); 
+
+                                    return (
+                                        <div key={player.element}>
+                                            <PlayerCard
+                                                playerColor={playerColor}
+                                                player={matchedPlayer}
+                                                eventPoints={matchedPlayer?.event_points ?? 0}
+                                            />
+                                        </div>
+                                    );
+                                })}
+
                                 </div>
                             </div>
                         )}

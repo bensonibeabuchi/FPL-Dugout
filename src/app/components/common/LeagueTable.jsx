@@ -13,7 +13,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   const [comparisonSquads, setComparisonSquads] = useState(null)
   const [isExpanded, setExpandedTeam] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState("");
-  const [sort, setSort] = useState({keyToSort: 'RANK', direction: 'asc'})
+  const [sort, setSort] = useState({keyToSort: 'live_total_points', direction: 'desc'})
 
   const headers = [
     {
@@ -69,7 +69,7 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
   const teams_live_points = teamsLiveTotalPoints?.teams_live_points
   const highestPoint = teamsLiveTotalPoints?.highest_live_points
   const { data: player } = useGetPlayersQuery({ leagueId, gw });
-  console.log(teamsLiveTotalPoints)
+  // console.log(teamsLiveTotalPoints)
   
   const players = Object.entries(player?.ownership || {}).map(([name, owners]) => ({ name, count: owners.length })).sort((a, b) => b.count - a.count);
   
@@ -115,6 +115,14 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
         // Get transfer cost
         const transferCostA = teamDetailsA?.entry_history?.event_transfers_cost ?? 0;
         const transferCostB = teamDetailsB?.entry_history?.event_transfers_cost ?? 0;
+
+        // Get live points
+        const livePointsA = livePointsMap[String(a.entry)] ?? 0;
+        const livePointsB = livePointsMap[String(b.entry)] ?? 0;
+
+        // Determine sorting key with a default fallback
+        const keyToSort = sort?.keyToSort ?? "live_total_points"; 
+        const direction = sort?.direction ?? "desc"; 
   
         // Sorting logic based on selected key
         switch (sort.keyToSort) {
@@ -151,11 +159,87 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
             return sort.direction === "asc" ? transferCostA - transferCostB : transferCostB - transferCostA;
   
           default:
-            return 0; // No sorting if the key is not recognized
+            return 0;
         }
       });
   }, [sort, fullLeagueData, fullTeam, liveGameweek, livePointsMap, generalInfo]);
   
+//   const sortedTeams = useMemo(() => {
+//     if (!fullLeagueData?.standings?.results || !livePointsMap) return [];
+
+//     return [...fullLeagueData.standings.results].sort((a, b) => {
+//         // Get additional details from fullTeam
+//         const teamDetailsA = fullTeam[a.entry] || {};
+//         const teamDetailsB = fullTeam[b.entry] || {};
+
+//         // Get team names (entry_name)
+//         const teamNameA = a.entry_name || "Unknown";
+//         const teamNameB = b.entry_name || "Unknown";
+
+//         // Calculate event real points (GW total - transfer cost)
+//         const eventRealPointsA = (teamDetailsA?.picks?.reduce((total, player) => {
+//           const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+//           return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+//         }, 0) || 0) - (teamDetailsA?.entry_history?.event_transfers_cost ?? 0);
+
+//         const eventRealPointsB = (teamDetailsB?.picks?.reduce((total, player) => {
+//           const matchedPlayerPoints = liveGameweek?.elements.find((element) => element.id === player.element);
+//           return total + (matchedPlayerPoints?.stats.total_points ?? 0) * (player.multiplier ?? 1);
+//         }, 0) || 0) - (teamDetailsB?.entry_history?.event_transfers_cost ?? 0);
+
+//         // Get captain and vice-captain names
+//         const captainElementA = teamDetailsA?.picks?.find((pick) => pick.is_captain)?.element;
+//         const captainElementB = teamDetailsB?.picks?.find((pick) => pick.is_captain)?.element;
+//         const captainNameA = generalInfo?.elements?.find((player) => player.id === captainElementA)?.web_name || "Unknown";
+//         const captainNameB = generalInfo?.elements?.find((player) => player.id === captainElementB)?.web_name || "Unknown";
+
+//         const viceCaptainElementA = teamDetailsA?.picks?.find((pick) => pick.is_vice_captain)?.element;
+//         const viceCaptainElementB = teamDetailsB?.picks?.find((pick) => pick.is_vice_captain)?.element;
+//         const viceCaptainNameA = generalInfo?.elements?.find((player) => player.id === viceCaptainElementA)?.web_name || "Unknown";
+//         const viceCaptainNameB = generalInfo?.elements?.find((player) => player.id === viceCaptainElementB)?.web_name || "Unknown";
+
+//         // Get transfer cost
+//         const transferCostA = teamDetailsA?.entry_history?.event_transfers_cost ?? 0;
+//         const transferCostB = teamDetailsB?.entry_history?.event_transfers_cost ?? 0;
+
+//         // Get live points
+//         const livePointsA = livePointsMap[String(a.entry)] ?? 0;
+//         const livePointsB = livePointsMap[String(b.entry)] ?? 0;
+
+//         // Determine sorting key with a default fallback
+//         const keyToSort = sort?.keyToSort ?? "live_total_points"; 
+//         const direction = sort?.direction ?? "desc"; 
+
+//         // Sorting logic based on selected key
+//         switch (keyToSort) {
+//           case "rank_sort":
+//           case "TOTAL":
+//             return direction === "asc" ? a[keyToSort] - b[keyToSort] : b[keyToSort] - a[keyToSort];
+
+//           case "entry_name":
+//             return direction === "asc" ? teamNameA.localeCompare(teamNameB) : teamNameB.localeCompare(teamNameA);
+
+//           case "live_total_points":
+//             return direction === "asc" ? livePointsA - livePointsB : livePointsB - livePointsA;
+
+//           case "CAPTAIN":
+//             return direction === "asc" ? captainNameA.localeCompare(captainNameB) : captainNameB.localeCompare(captainNameA);
+
+//           case "VICE":
+//             return direction === "asc" ? viceCaptainNameA.localeCompare(viceCaptainNameB) : viceCaptainNameB.localeCompare(viceCaptainNameA);
+
+//           case "EVENT_REAL_POINTS":
+//             return direction === "asc" ? eventRealPointsA - eventRealPointsB : eventRealPointsB - eventRealPointsA;
+
+//           case "TRANSFER_COST":
+//             return direction === "asc" ? transferCostA - transferCostB : transferCostB - transferCostA;
+
+//           default:
+//             return 0;
+//         }
+//     });
+// }, [sort, fullLeagueData, fullTeam, liveGameweek, livePointsMap, generalInfo]);
+
   
   const handleCompareTeams = () => {
     if (team1 && team2) {
@@ -344,11 +428,11 @@ const LeagueTable = ({ fullLeagueData, fullTeam, liveGameweek, generalInfo, leag
                         <div>
                           <div className='flex-col items-center'>
                             <div className='flex flex-row items-center'>
-                              <p>{team.rank_sort}</p>
+                              <p>{index+1}</p>
                               <p>
-                                {team.rank_sort < team.last_rank ? (
+                                {index + 1 < team.last_rank ? (
                                   <RiArrowUpSFill color="green" size={25} />
-                                ) : team.rank_sort > team.last_rank ? (
+                                ) : index + 1 > team.last_rank ? (
                                   <RiArrowDownSFill color="red" size={25} />
                                 ) : (
                                   <RiCircleFill color="gray" size={12} />
