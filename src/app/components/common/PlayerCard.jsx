@@ -36,7 +36,7 @@ const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints, playerColor
             <p suppressHydrationWarning className="bg-[#3a3f43] rounded-b-md sm:text-[10px] text-[8px] text-center truncate text-white px-1 py-1 w-full">
                 {eventPoints} pts
             </p>
-            <p>{playerColor}</p>
+            {/* <p>{playerColor}</p> */}
         </div>
     );
 };

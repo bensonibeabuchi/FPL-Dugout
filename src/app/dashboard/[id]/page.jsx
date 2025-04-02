@@ -221,6 +221,7 @@ export default function Page() {
                                                             isCaptain={player.is_captain}
                                                             isViceCaptain={player.is_vice_captain}
                                                             eventPoints={eventPoints}
+                                                            playerColor={playerColor}
                                                         />
                                                     );
                                                 })}

@@ -3,11 +3,20 @@ import { useSelector } from "react-redux";
 import "remixicon/fonts/remixicon.css";
 import { IoIosCloseCircle } from "react-icons/io";
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+
 
 
 export default function SelectLeague({ isOpen, onClose}) {
   const userTeam = useSelector((state) => state.team.teamData);
-  const [page, setPage] = useState(1)
+  const [loadingLeague, setLoadingLeague] = useState(null);
+  const router = useRouter();
+
+  const handleLeagueClick = (leagueId) => {
+    setLoadingLeague(leagueId);
+    router.push(`/dashboard/${leagueId}`);
+  };
+
 
   return (
     <div className="fixed z-20 top-0 h-screen w-screen left-0 bg-black bg-opacity-50 flex items-center justify-center mx-auto backdrop-blur-sm">
@@ -27,9 +36,16 @@ export default function SelectLeague({ isOpen, onClose}) {
             <li className='px-4 py-1 font-semibold text-[#38003c]'>Invitational Leagues</li>
               {userTeam?.leagues.classic.filter((league) => league.league_type === "x").map((league) => (
                   <div key={league.id}>
-                    <Link href={`/dashboard/${league.id}/`}>
+                    {/* <Link href={`/dashboard/${league.id}/`}>
                       <li className="px-4 py-1 hover:bg-gray-100 hover:scale-[1.02] cursor-pointer">{league.name}</li>
-                    </Link>
+                    </Link> */}
+                    <button 
+                      onClick={() => handleLeagueClick(league.id)} 
+                      className="px-4 py-1 hover:bg-gray-100 hover:scale-[1.02] cursor-pointer w-full text-left"
+                      disabled={loadingLeague === league.id}
+                    >
+                      {loadingLeague === league.id ? "Loading..." : league.name}
+                    </button>
                   </div>
               ))}
           </ul>
@@ -37,9 +53,16 @@ export default function SelectLeague({ isOpen, onClose}) {
             <li className='px-4 py-1 font-semibold text-[#38003c]'>General Leagues</li>
               {userTeam?.leagues.classic.filter((league) => league.league_type === "s").map((league) => (
                 <div key={league.id}>
-                  <Link href={`/dashboard/${league.id}`}>
+                  {/* <Link href={`/dashboard/${league.id}`}>
                     <li className="px-4 py-1 hover:bg-gray-100 hover:scale-[1.02] cursor-pointer">{league.name}</li>
-                  </Link>
+                  </Link> */}
+                    <button 
+                      onClick={() => handleLeagueClick(league.id)} 
+                      className="px-4 py-1 hover:bg-gray-100 hover:scale-[1.02] cursor-pointer w-full text-left"
+                      disabled={loadingLeague === league.id}
+                    >
+                      {loadingLeague === league.id ? "Loading..." : league.name}
+                    </button>
               </div>
             ))}
           </ul>
