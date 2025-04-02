@@ -7,6 +7,8 @@ const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints, playerColor
 
     const { opta_code, web_name } = player;
 
+    console.log("MINUTES PLAYES", playerColor)
+
     // Fetch player photo only if `opta_code` is available
     const { data: playerPhoto, isLoading } = useGetPlayerPhotoQuery(
         { opta_code },
@@ -36,7 +38,6 @@ const PlayerCard = ({ player, isCaptain, isViceCaptain, eventPoints, playerColor
             <p suppressHydrationWarning className="bg-[#3a3f43] rounded-b-md sm:text-[10px] text-[8px] text-center truncate text-white px-1 py-1 w-full">
                 {eventPoints} pts
             </p>
-            {/* <p>{playerColor}</p> */}
         </div>
     );
 };

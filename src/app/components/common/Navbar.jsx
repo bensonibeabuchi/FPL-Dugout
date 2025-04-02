@@ -38,7 +38,7 @@ export default function Navbar() {
                 setUserTeam(null)
             }
         }  else {
-            router.push
+            router.push("/")
         }
     }, []);
 

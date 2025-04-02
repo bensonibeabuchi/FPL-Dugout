@@ -21,7 +21,7 @@ export default function Home() {
 
   const { data, error, isLoading } = useGetTeamQuery(submittedTeamId, {
     skip: !submittedTeamId, // Don't fetch until submit
-  });
+    });
 
   
   useEffect(() => {
@@ -31,9 +31,14 @@ export default function Home() {
       const savedTeamData = localStorage.getItem("teamData");
       
       if (savedTeamData && !userTeam) {  
-        setSubmittedTeamId(savedTeamId);
-        const teamData = JSON.parse(savedTeamData);
-        dispatch(setTeamData(teamData));
+        try {
+          setSubmittedTeamId(savedTeamId);
+          const teamData = JSON.parse(savedTeamData);
+          dispatch(setTeamData(teamData));
+        } catch(error){
+          setSubmittedTeamId(null)
+
+        }
       }
     }
   }, [dispatch, userTeam]); 
